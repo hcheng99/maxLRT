@@ -245,7 +245,7 @@ pwr2n.maxLR<- function(entry     = 1
 
   return(list( eventN  = dnum
                ,totalN = Nsize
-               ,pwr = power
+               ,pwr = as.numeric(power)
                ,prob_event = mean(c(pdat$C_E[num],pdat$E_E[num]))
                ,L_trans = L_trans
                ,pdat = pdat
