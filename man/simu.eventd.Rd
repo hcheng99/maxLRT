@@ -5,19 +5,19 @@
 \title{FUNCTION_TITLE}
 \usage{
 simu.eventd(
-  bsl_dist = c("weibull", "loglogistic"),
+  bs_dist = c("weibull", "loglogistic"),
   param,
   totN,
   eventN,
   fHR,
   prop,
-  T0 = 2,
+  entry = 2,
   seed,
   upInt = 100
 )
 }
 \arguments{
-\item{bsl_dist}{PARAM_DESCRIPTION, Default: c("weibull", "loglogistic")}
+\item{bs_dist}{PARAM_DESCRIPTION, Default: c("weibull", "loglogistic")}
 
 \item{param}{PARAM_DESCRIPTION}
 
@@ -29,7 +29,7 @@ simu.eventd(
 
 \item{prop}{PARAM_DESCRIPTION}
 
-\item{T0}{PARAM_DESCRIPTION, Default: 2}
+\item{entry}{PARAM_DESCRIPTION, Default: 2}
 
 \item{seed}{PARAM_DESCRIPTION}
 

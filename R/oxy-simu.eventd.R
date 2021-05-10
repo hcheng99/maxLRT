@@ -2,37 +2,36 @@
 
 #' @title FUNCTION_TITLE
 #' @description FUNCTION_DESCRIPTION
-#' @param bsl_dist PARAM_DESCRIPTION, Default: c("weibull", "loglogistic")
+#' @param bs_dist PARAM_DESCRIPTION, Default: c("weibull", "loglogistic")
 #' @param param PARAM_DESCRIPTION
 #' @param totN PARAM_DESCRIPTION
 #' @param eventN PARAM_DESCRIPTION
 #' @param fHR PARAM_DESCRIPTION
 #' @param prop PARAM_DESCRIPTION
-#' @param T0 PARAM_DESCRIPTION, Default: 2
+#' @param entry PARAM_DESCRIPTION, Default: 2
 #' @param seed PARAM_DESCRIPTION
 #' @param upInt PARAM_DESCRIPTION, Default: 100
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[stats]{Weibull}},\code{\link[stats]{integrate}},\code{\link[stats]{Logistic}},\code{\link[stats]{uniroot}},\code{\link[stats]{Uniform}}
 #' @rdname simu.eventd
-#' @export
+#' @export 
 #' @importFrom stats rweibull integrate rlogis uniroot runif
-#' @importFrom dplyr %>%
-simu.eventd <- function(bsl_dist=c("weibull","loglogistic")
+simu.eventd <- function(bs_dist=c("weibull","loglogistic")
                                     ,param
                                       # alpha=1 corresponds to exponential
                                     ,totN
                                     ,eventN
                                     ,fHR #the non proportion hazard function
                                     ,prop #proportion of treatment group
-                                    ,T0 =2 #entry time
+                                    ,entry =2 #entry time
                                     ,seed
                                     ,upInt=100
 
@@ -67,14 +66,14 @@ simu.eventd <- function(bsl_dist=c("weibull","loglogistic")
 
   ## for entry time
   set.seed(seed+1)
-  t0 <- stats::runif(totN,0,T0)
+  t0 <- stats::runif(totN,0,entry)
   ot <- t0+Tm
 
   dat <- data.frame(id=1:totN,ent=t0,time=Tm,trt=trt,ot=ot)
   # order the time
   dat <- dat[order(dat$ot),]
   cutDate <- dat[eventN,]$ot
-  if (cutDate<T0) warning("Cutoff date is before the recruit end date")
+  if (cutDate<entry) warning("Cutoff date is before the recruit end date")
   dat$t_cnsr <- ifelse(dat$ot >cutDate,0,1)
   dat$t_val <- ifelse(dat$ot<cutDate,dat$time,cutDate-dat$ent)
   dat$cutDate <- dat[eventN,]$ot

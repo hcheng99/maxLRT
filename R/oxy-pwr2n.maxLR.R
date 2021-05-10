@@ -1,13 +1,13 @@
 
 #*********************************************
-# cal_size ----
+
 ###input parameters
 #' @title FUNCTION_TITLE
 #' @description FUNCTION_DESCRIPTION
 #' @param entry PARAM_DESCRIPTION, Default: 1
 #' @param fup PARAM_DESCRIPTION, Default: 1
 #' @param k PARAM_DESCRIPTION, Default: 100
-#' @param plist1 PARAM_DESCRIPTION
+#' @param trans.prob PARAM_DESCRIPTION
 #' @param hazR PARAM_DESCRIPTION
 #' @param Wlist PARAM_DESCRIPTION
 #' @param alpha PARAM_DESCRIPTION, Default: 0.05
@@ -36,7 +36,7 @@
 pwr2n.maxLR<- function(entry     = 1
                      ,fup      = 1
                      ,k        = 100
-                     ,plist1
+                     ,trans.prob
                      ,hazR
                      ,Wlist
                      ,alpha    = 0.05
@@ -50,7 +50,7 @@ pwr2n.maxLR<- function(entry     = 1
   num <- k*tot_time
 
   x <- seq(0.01,tot_time,length=k)
-  haz_val <- hazR(x)*plist1[5]
+  haz_val <- hazR(x)*trans.prob[5]
   haz_point <- x*k
   hazard <- stats::stepfun(haz_point,c(haz_val,haz_val[length(haz_val)]),
                     right=TRUE)
@@ -65,19 +65,19 @@ pwr2n.maxLR<- function(entry     = 1
   L_trans <- list()
   for (i in 1:num){
     j <- ceiling(i/k)
-    plist1[2] <- hazard(i)
+    trans.prob[2] <- hazard(i)
     # before a, there is no censor
     if (nocensor==FALSE){
       if (j <=fup){
-        L_trans[[i]] <- cbind(rbind(CrtTM(Plist = plist1,K=k),rep(0,4)),
+        L_trans[[i]] <- cbind(rbind(CrtTM(Plist = trans.prob,K=k),rep(0,4)),
                               c(0,0,0,0,1))
 
       }else {
-        L_trans [[i]] <- CrtTM_C(Plist = plist1,K=k,a=entry,b=fup,i=i)
+        L_trans [[i]] <- CrtTM_C(Plist = trans.prob,K=k,a=entry,b=fup,i=i)
 
       }
     }else {
-      L_trans[[i]] <- cbind(rbind(CrtTM(Plist = plist1,K=k),rep(0,4)),
+      L_trans[[i]] <- cbind(rbind(CrtTM(Plist = trans.prob,K=k),rep(0,4)),
                             c(0,0,0,0,1))
     }
 
@@ -216,8 +216,8 @@ pwr2n.maxLR<- function(entry     = 1
   #print(mean(c(pdat$C_E[num],pdat$E_E[num])))
   #print(num)
   if (plot==TRUE){
-    Se1 <- exp(-plist1[2]*pdat$ti)
-    Se0 <- exp(-plist1[5]*pdat$ti)
+    Se1 <- exp(-trans.prob[2]*pdat$ti)
+    Se0 <- exp(-trans.prob[5]*pdat$ti)
 
     graphics::par(mfrow=c(1,1))
     with(pdat,

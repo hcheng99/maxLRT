@@ -4,8 +4,8 @@
 #
 #                           ,fHR=fun_list[[1]]#the non proportion hazard function
 #                           ,prop=0.5 #proportionof  treatment group
-#                           ,T0 =18 #entry time
-#                           ,Tfup=24
+#                           ,entry =18 #entry time
+#                           ,fup=24
 #                           ,seed=100
 #                           ,upInt=2500
 # )
@@ -15,8 +15,8 @@ simu.fixed <- function(bsl_dist=c("weibull","loglogistic")
                             ,totN
                             ,fHR #the non proportion hazard function
                             ,prop #proportion of treatment group
-                            ,T0 =18 #entry time
-                            ,Tfup=24
+                            ,entry =18 #entry time
+                            ,fup=24
                             ,seed
                             ,upInt=100
 
@@ -52,12 +52,12 @@ simu.fixed <- function(bsl_dist=c("weibull","loglogistic")
 
   ## for entry time
   set.seed(seed+1)
-  t0 <- runif(totN,0,T0)
+  t0 <- runif(totN,0,entry)
   ot <- t0+Tm
 
   dat <- data.frame(id=1:totN,ent=t0,time=Tm,trt=trt,ot=ot)
-  dat$t_cnsr <- with(dat,ifelse(ot>T0+Tfup,0,1))
-  dat$t_val <- with(dat,ifelse(ot>T0+Tfup,T0+Tfup-ent,Tm))
+  dat$t_cnsr <- with(dat,ifelse(ot>entry+fup,0,1))
+  dat$t_val <- with(dat,ifelse(ot>entry+fup,entry+fup-ent,Tm))
 
 
   return(dat)

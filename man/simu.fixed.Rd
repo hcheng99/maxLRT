@@ -10,8 +10,8 @@ simu.fixed(
   totN,
   fHR,
   prop,
-  T0 = 18,
-  Tfup = 24,
+  entry = 18,
+  fup = 24,
   seed,
   upInt = 100
 )
@@ -27,9 +27,9 @@ simu.fixed(
 
 \item{prop}{PARAM_DESCRIPTION}
 
-\item{T0}{PARAM_DESCRIPTION, Default: 18}
+\item{entry}{PARAM_DESCRIPTION, Default: 18}
 
-\item{Tfup}{PARAM_DESCRIPTION, Default: 24}
+\item{fup}{PARAM_DESCRIPTION, Default: 24}
 
 \item{seed}{PARAM_DESCRIPTION}
 

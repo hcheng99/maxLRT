@@ -1,13 +1,13 @@
 
 
-simu.eventd <- function(bsl_dist=c("weibull","loglogistic")
+simu.eventd <- function(bs_dist=c("weibull","loglogistic")
                                     ,param
                                       # alpha=1 corresponds to exponential
                                     ,totN
                                     ,eventN
                                     ,fHR #the non proportion hazard function
                                     ,prop #proportion of treatment group
-                                    ,T0 =2 #entry time
+                                    ,entry =2 #entry time
                                     ,seed
                                     ,upInt=100
 
@@ -42,14 +42,14 @@ simu.eventd <- function(bsl_dist=c("weibull","loglogistic")
 
   ## for entry time
   set.seed(seed+1)
-  t0 <- stats::runif(totN,0,T0)
+  t0 <- stats::runif(totN,0,entry)
   ot <- t0+Tm
 
   dat <- data.frame(id=1:totN,ent=t0,time=Tm,trt=trt,ot=ot)
   # order the time
   dat <- dat[order(dat$ot),]
   cutDate <- dat[eventN,]$ot
-  if (cutDate<T0) warning("Cutoff date is before the recruit end date")
+  if (cutDate<entry) warning("Cutoff date is before the recruit end date")
   dat$t_cnsr <- ifelse(dat$ot >cutDate,0,1)
   dat$t_val <- ifelse(dat$ot<cutDate,dat$time,cutDate-dat$ent)
   dat$cutDate <- dat[eventN,]$ot

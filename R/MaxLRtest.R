@@ -66,7 +66,7 @@ MaxLRtest <- function(dat
               ,stat.mat=stat.mat
               ,critV=crit
               ,details=Rdat
-              ,pvalue=p.value)
+              ,p.value=p.value)
   class(list) <- 'MaxLR'
 
   return(list)

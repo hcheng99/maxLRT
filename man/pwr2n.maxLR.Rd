@@ -8,7 +8,7 @@ pwr2n.maxLR(
   entry = 1,
   fup = 1,
   k = 100,
-  plist1,
+  trans.prob,
   hazR,
   Wlist,
   alpha = 0.05,
@@ -26,7 +26,7 @@ pwr2n.maxLR(
 
 \item{k}{PARAM_DESCRIPTION, Default: 100}
 
-\item{plist1}{PARAM_DESCRIPTION}
+\item{trans.prob}{PARAM_DESCRIPTION}
 
 \item{hazR}{PARAM_DESCRIPTION}
 
