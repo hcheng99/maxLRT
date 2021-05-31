@@ -9,11 +9,12 @@ simu.fixed(
   param,
   totN,
   fHR,
-  prop,
+  ratio,
   entry = 18,
   fup = 24,
   seed,
-  upInt = 100
+  upInt = 100,
+  drop_param
 )
 }
 \arguments{
@@ -25,7 +26,7 @@ simu.fixed(
 
 \item{fHR}{PARAM_DESCRIPTION}
 
-\item{prop}{PARAM_DESCRIPTION}
+\item{ratio}{PARAM_DESCRIPTION}
 
 \item{entry}{PARAM_DESCRIPTION, Default: 18}
 
@@ -34,6 +35,8 @@ simu.fixed(
 \item{seed}{PARAM_DESCRIPTION}
 
 \item{upInt}{PARAM_DESCRIPTION, Default: 100}
+
+\item{drop_param}{PARAM_DESCRIPTION}
 }
 \value{
 OUTPUT_DESCRIPTION
