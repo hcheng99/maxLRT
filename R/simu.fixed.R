@@ -60,7 +60,7 @@ simu.fixed <- function(bsl_dist=c("weibull","loglogistic")
     set.seed(seed*99)
     drop_time <- stats::rweibull(totN,a_drop,1/b_drop)
   }else{
-    drop_time <- rep(1:length(totN),Inf)
+    drop_time <- rep(Inf,totN)
   }
 
   ## for entry time
