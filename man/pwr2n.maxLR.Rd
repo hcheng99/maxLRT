@@ -11,6 +11,7 @@ pwr2n.maxLR(
   trans.prob,
   hazR,
   Wlist,
+  ratio = 1,
   alpha = 0.05,
   beta = 0.1,
   two.side = TRUE,
@@ -31,6 +32,8 @@ pwr2n.maxLR(
 \item{hazR}{PARAM_DESCRIPTION}
 
 \item{Wlist}{PARAM_DESCRIPTION}
+
+\item{ratio}{PARAM_DESCRIPTION, Default: 1}
 
 \item{alpha}{PARAM_DESCRIPTION, Default: 0.05}
 

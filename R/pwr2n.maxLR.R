@@ -2,18 +2,19 @@
 #*********************************************
 
 ###input parameters
-pwr2n.maxLR<- function(entry     = 1
+pwr2n.maxLR<- function(entry   = 1
                      ,fup      = 1
                      ,k        = 100
                      ,trans.prob
                      ,hazR
                      ,Wlist
+                     ,ratio    = 1
                      ,alpha    = 0.05
                      ,beta     = 0.1
                      ,two.side = TRUE
                      ,plot     = TRUE
                      ,nocensor = FALSE
-                     ,criteria  = 100
+                     ,criteria = 100
 ){
   tot_time <- entry+fup
   num <- k*tot_time
@@ -84,10 +85,10 @@ pwr2n.maxLR<- function(entry     = 1
     pdat[i,15] <- pdat[i,13]/pdat[i,14]
     # pdat[i,13] <- 2
     #gamma
-    pdat[i,16] <- pdat[i,12]*pdat[i,15]/(1+pdat[i,12]*pdat[i,15])-
-      pdat[i,12]/(1+pdat[i,12])
+    pdat[i,16] <- pdat[i,12]*pdat[i,15]*ratio/(1+pdat[i,12]*pdat[i,15]*ratio)-
+      pdat[i,12]*ratio/(1+pdat[i,12]*ratio)
     #eta
-    pdat[i,17] <- pdat[i,12]/(1+pdat[i,12])^2
+    pdat[i,17] <- pdat[i,12]*ratio/(1+pdat[i,12]*ratio)^2
     # print(pdat[i,])
   }
   #pdat
