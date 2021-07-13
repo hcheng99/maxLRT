@@ -19,18 +19,23 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
   }
   HR <- lambda1/lambda0
   if (t_enrl==0){
-    e0 <- list(value=1-exp(-lambda0))
-    e1 <- list(value=1-exp(-lambda1))
+    e0 <- 1-exp(-lambda0)
+    e1 <- 1-exp(-lambda1)
 
   }
   else {
     intef <- function(x,l){(1-exp(-l*x))}
     e0 <-stats::integrate(function(x){intef(x,l=lambda0)},lower=t_fup,upper=t_enrl+t_fup)
     e1 <-stats::integrate(function(x){intef(x,l=lambda1)},lower=t_fup,upper=t_enrl+t_fup)
+    e0 <- e0$value/t_enrl
+    e1 <- e1$value/t_enrl
+
+
   }
   ## calculate the event rate
-  erate <- stats::weighted.mean(c(e0$value,e1$value),
-                         w=c(1/(1+phi),phi/(1+phi)))/(t_enrl)
+  erate <- stats::weighted.mean(c(e0,e1),
+                         w=c(1/(1+phi),phi/(1+phi)))
+  print(erate)
   ## calculate the number of events
   numerator=(stats::qnorm(1-alpha/2)+stats::qnorm(1-beta))^2
 
@@ -47,3 +52,28 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
   N=Dnum /erate
   return(list(eventN=Dnum,totalN=N))
 }
+
+cal_event <- function(
+  phi
+  ,lambda1
+  ,lambda0
+  ,t_enrl
+  ,t_fup
+  ,l_shape
+  ,l_scale
+){
+  calp <- function(lambda1){
+    f1 <- function(x){lambda1*exp(-x*lambda1-(x/scale)^shape)}
+    F1 <- Vectorize(function(u){integrate(f1,lower=0,upper=u)$value})
+    e1 <- integrate(F1,lower=t_fup,upper=t_enrl+t_fup)$value/t_enrl
+    return(e1)
+  }
+
+  ## treatment group
+  e1 <- calp(lambda1)
+  ## placebo
+  e0 <- calp(lambda0)
+  e <- phi/(1+phi)*e1+e0/(1+phi)
+  return(e)
+}
+

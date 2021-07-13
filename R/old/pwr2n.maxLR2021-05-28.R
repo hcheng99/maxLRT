@@ -2,31 +2,27 @@
 #*********************************************
 
 ###input parameters
-pwr2n.maxLR<- function(entry   = 1
+pwr2n.maxLR<- function(entry     = 1
                      ,fup      = 1
                      ,k        = 100
                      ,trans.prob
                      ,hazR
                      ,Wlist
-                     ,ratio    = 1
                      ,alpha    = 0.05
                      ,beta     = 0.1
                      ,two.side = TRUE
                      ,plot     = TRUE
                      ,nocensor = FALSE
-                     ,criteria = 100
+                     ,criteria  = 100
 ){
   tot_time <- entry+fup
   num <- k*tot_time
 
-  #x <- seq(0.01,tot_time,length=k)
-  x <- seq(0,tot_time,by=1/k)
+  x <- seq(0.01,tot_time,length=k)
   haz_val <- hazR(x)*trans.prob[5]
   haz_point <- x*k
- # hazard <- stats::stepfun(haz_point,c(haz_val,haz_val[length(haz_val)]),
-  #                  right=TRUE)
-  hazard <- stats::stepfun(haz_point,c(haz_val[1],haz_val),
-                           right=FALSE)
+  hazard <- stats::stepfun(haz_point,c(haz_val,haz_val[length(haz_val)]),
+                    right=TRUE)
   ##initial states for treatment
   D1 <- c(0,0,1,0,0)
   ##initial states for control
@@ -88,10 +84,10 @@ pwr2n.maxLR<- function(entry   = 1
     pdat[i,15] <- pdat[i,13]/pdat[i,14]
     # pdat[i,13] <- 2
     #gamma
-    pdat[i,16] <- pdat[i,12]*pdat[i,15]*ratio/(1+pdat[i,12]*pdat[i,15]*ratio)-
-      pdat[i,12]*ratio/(1+pdat[i,12]*ratio)
+    pdat[i,16] <- pdat[i,12]*pdat[i,15]/(1+pdat[i,12]*pdat[i,15])-
+      pdat[i,12]/(1+pdat[i,12])
     #eta
-    pdat[i,17] <- pdat[i,12]*ratio/(1+pdat[i,12]*ratio)^2
+    pdat[i,17] <- pdat[i,12]/(1+pdat[i,12])^2
     # print(pdat[i,])
   }
   #pdat
@@ -109,7 +105,7 @@ pwr2n.maxLR<- function(entry   = 1
     pdat[i,21] <- prod(1-pdat[1:i,14])
     ## mean survival
     # pdat[i,19] <- mean(sum(pdat[i,5],pdat[i,4]),sum(pdat[i,10],pdat[i,9]))
-    pdat[i,19] <- stats::weighted.mean(c(pdat[i,20],pdat[i,21]),w=c(ratio,1))
+    pdat[i,19] <- mean(c(pdat[i,20],pdat[i,21]))
     ## rho
     if (i==1){
       pdat[i,18] <- (pdat[i,3]+pdat[i,8])/rho
