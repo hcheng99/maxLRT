@@ -64,7 +64,7 @@ if(interactive()){
 }
 }
 \seealso{
-\code{\link[stats]{stepfun}}
+\code{\link[stats]{stepfun}},\code{\link[stats]{weighted.mean}}
 \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
 \code{\link[graphics]{par}},\code{\link[graphics]{lines}},\code{\link[graphics]{legend}}
 }
