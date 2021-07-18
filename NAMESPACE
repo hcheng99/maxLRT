@@ -2,6 +2,7 @@
 
 S3method(plot,MaxLR)
 export(MaxLRtest)
+export(cal_event)
 export(load.mat)
 export(plotHazSurv)
 export(projection.test)

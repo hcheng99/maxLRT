@@ -102,6 +102,7 @@ pwr2n.maxLR<- function(entry   = 1
     else {
       #phi
       pdat[i,12] <- sum(pdat[i-1,5],pdat[i-1,4])/sum(pdat[i-1,10],pdat[i-1,9])
+     # pdat[i,12] <- round(pdat[i,12],digits=3)
       # f0 <- function(x) {-exp(-pdat[i,1]*x)+exp(-pdat[i-1,1]*x)-pdat[i,3]+pdat[i-1,3]}
       # #f0 <- function(x) {-exp(-pdat[i,1]*x)+exp(-pdat[i-1,1]*x)+exp(-pdat[i,1])-exp(-pdat[i-1,1])}
       # f1 <- function(x) {-exp(-pdat[i,1]*x)+exp(-pdat[i-1,1]*x)-pdat[i,7]+pdat[i-1,7]}
@@ -151,11 +152,14 @@ pwr2n.maxLR<- function(entry   = 1
 
     }
   }
+
   pdat <- as.data.frame(pdat)
   names(pdat) <-
     c("ti","E_L","E_E","E_Ae","E_Ac","E_C","C_L","C_E","C_Ae",
       "C_Ac","C_C","phi","hazard_E","hazard_C","theta","gamma","eta",
       "rho","S","S1","S0")
+
+  #pdat$rho <- round(pdat$rho,digits=4)
 
   # w_f <- function(x){2*x-1}
   # w_f <- function(x){1}
@@ -216,7 +220,7 @@ pwr2n.maxLR<- function(entry   = 1
 
 
 
-  Nsize <- dnum/mean(c(pdat$C_E[num],pdat$E_E[num]))
+  Nsize <- dnum/stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(ratio,1))
   #print(Nsize)
   #print(mean(c(pdat$C_E[num],pdat$E_E[num])))
   #print(num)
@@ -251,7 +255,8 @@ pwr2n.maxLR<- function(entry   = 1
   return(list( eventN  = dnum
                ,totalN = Nsize
                ,pwr = as.numeric(power)
-               ,prob_event = mean(c(pdat$C_E[num],pdat$E_E[num]))
+               ,prob_event =
+                 stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(ratio,1))
                ,L_trans = L_trans
                ,pdat = pdat
 

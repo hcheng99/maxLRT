@@ -2,7 +2,7 @@
 % Please edit documentation in R/oxy-MaxLRtest.R
 \name{MaxLRtest}
 \alias{MaxLRtest}
-\title{Maximum weighted logrank test}
+\title{FUNCTION_TITLE}
 \usage{
 MaxLRtest(
   dat,
@@ -13,31 +13,21 @@ MaxLRtest(
 )
 }
 \arguments{
-\item{dat}{the dataset containing time, event indicator and group in the 1st-3rd column}
+\item{dat}{PARAM_DESCRIPTION}
 
-\item{Wlist}{a list object containing the weight functions (see example below)}
+\item{Wlist}{PARAM_DESCRIPTION}
 
-\item{base}{the base for weight function,see details for the options, Default: c("Combined", "KM", "N")}
+\item{base}{PARAM_DESCRIPTION, Default: c("Combined", "KM", "N")}
 
-\item{alpha}{significance level, Default: 0.05}
+\item{alpha}{PARAM_DESCRIPTION, Default: 0.05}
 
-\item{side}{indicates the alternative hypothesis and must be one of "two.sided"
-"greater" or "less". Default: c("two.sided")}
+\item{side}{PARAM_DESCRIPTION, Default: c("two.sided")}
 }
 \value{
-A list containing the following components:
-\describe{
-\item{p.value:}{the p-value of the test}
-\item{stat:}{the maximum statistic}
-\item{stat.matrix}{statistics from each weight function and covariance matrix between
-statistics.}
-\item{critV:}{the critical value based on the multivariate normal distribution}
-\item{details:}{the dataset containing information at each event time point}
-}
+OUTPUT_DESCRIPTION
 }
 \description{
-Function for performing maximum weighted logrank test. Maxcombo test,
-Fleming-Harrington test or logrank test are special cases.
+FUNCTION_DESCRIPTION
 }
 \details{
 DETAILS

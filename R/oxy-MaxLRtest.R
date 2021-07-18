@@ -1,37 +1,24 @@
-#' @title Maximum weighted logrank test
-#' @description Function for performing maximum weighted logrank test. Maxcombo test,
-#' Fleming-Harrington test or logrank test are special cases.
-#' @param dat the dataset containing time, event indicator and group in the 1st-3rd column
-#' @param Wlist a list object containing the weight functions (see example below)
-#' @param base the base for weight function,see details for the options, Default: c("Combined", "KM", "N")
-#' @param alpha significance level, Default: 0.05
-#' @param side indicates the alternative hypothesis and must be one of "two.sided"
-#' "greater" or "less". Default: c("two.sided")
-#' @return A list containing the following components:
-#' \describe{
-#' \item{p.value:}{the p-value of the test}
-#' \item{stat:}{the maximum statistic}
-#' \item{stat.matrix}{statistics from each weight function and covariance matrix between
-#' statistics.}
-#' \item{critV:}{the critical value based on the multivariate normal distribution}
-#' \item{details:}{the dataset containing information at each event time point}
-
-#' }
-
-
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @param dat PARAM_DESCRIPTION
+#' @param Wlist PARAM_DESCRIPTION
+#' @param base PARAM_DESCRIPTION, Default: c("Combined", "KM", "N")
+#' @param alpha PARAM_DESCRIPTION, Default: 0.05
+#' @param side PARAM_DESCRIPTION, Default: c("two.sided")
+#' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[survival]{survfit}}
 #'  \code{\link[stats]{stepfun}},\code{\link[stats]{cor}}
 #'  \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
 #' @rdname MaxLRtest
-#' @export
+#' @export 
 #' @importFrom survival survfit
 #' @importFrom stats stepfun cov2cor
 #' @importFrom mvtnorm qmvnorm pmvnorm
@@ -116,16 +103,16 @@ MaxLRtest <- function(dat
 #' @param ... PARAM_DESCRIPTION
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
-#' @examples
+#' @examples 
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso
+#' @seealso 
 #'  \code{\link[graphics]{points}},\code{\link[graphics]{legend}},\code{\link[graphics]{mtext}}
 #' @rdname plot.MaxLR
-#' @export
+#' @export 
 #' @importFrom graphics points legend mtext
 plot.MaxLR <- function(x,...) {
     datM <- x$details
