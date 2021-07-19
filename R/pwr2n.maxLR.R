@@ -96,7 +96,7 @@ pwr2n.maxLR<- function(entry   = 1
     # print(pdat[i,])
   }
   #pdat
-  rho <- pdat[num,3]+pdat[num,8]
+  rho <- (pdat[num,3]*ratio+pdat[num,8])/(ratio+1)
 
   ## sample size
   for (i in 1:num){
@@ -113,10 +113,10 @@ pwr2n.maxLR<- function(entry   = 1
     pdat[i,19] <- stats::weighted.mean(c(pdat[i,20],pdat[i,21]),w=c(ratio,1))
     ## rho
     if (i==1){
-      pdat[i,18] <- (pdat[i,3]+pdat[i,8])/rho
+      pdat[i,18] <- (pdat[i,3]*ratio+pdat[i,8])/rho/(ratio+1)
     }else
     {
-      pdat[i,18] <- (pdat[i,3]-pdat[i-1,3]+pdat[i,8]-pdat[i-1,8])/rho
+      pdat[i,18] <- ((pdat[i,3]-pdat[i-1,3])*ratio+pdat[i,8]-pdat[i-1,8])/rho/(ratio+1)
 
     }
   }
