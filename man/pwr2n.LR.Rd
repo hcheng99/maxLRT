@@ -2,7 +2,7 @@
 % Please edit documentation in R/oxy-pwr2n.LR.R
 \name{pwr2n.LR}
 \alias{pwr2n.LR}
-\title{FUNCTION_TITLE}
+\title{Sample Size Calculation under Proportional Hazards}
 \usage{
 pwr2n.LR(
   method = c("schoenfeld", "freedman"),
@@ -13,44 +13,103 @@ pwr2n.LR(
   t_fup,
   alpha = 0.05,
   beta = 0.1,
-  two.side = TRUE
+  two.side = TRUE,
+  Lparam = NULL
 )
 }
 \arguments{
-\item{method}{PARAM_DESCRIPTION, Default: c("schoenfeld", "freedman")}
+\item{method}{calculation formula, Default: c("schoenfeld", "freedman")}
 
-\item{lambda0}{PARAM_DESCRIPTION}
+\item{lambda0}{hazard rate for the control group}
 
-\item{lambda1}{PARAM_DESCRIPTION}
+\item{lambda1}{hazard rate for the treatment group}
 
-\item{phi}{PARAM_DESCRIPTION}
+\item{phi}{randomization ratio between treatment and control. For example,
+phi=2 if randomization ratio is 2:1 to treatment and control group.}
 
-\item{t_enrl}{PARAM_DESCRIPTION, Default: 0}
+\item{t_enrl}{enrollment time. A constant enrollment rate is assumed,
+Default: 0}
 
-\item{t_fup}{PARAM_DESCRIPTION}
+\item{t_fup}{follow-up time.}
 
-\item{alpha}{PARAM_DESCRIPTION, Default: 0.05}
+\item{alpha}{type I error rate, Default: 0.05}
 
-\item{beta}{PARAM_DESCRIPTION, Default: 0.1}
+\item{beta}{type II error rate. For example,if the target power is 80\%, beta is 0.2.
+Default: 0.1}
 
-\item{two.side}{PARAM_DESCRIPTION, Default: TRUE}
+\item{two.side}{a logical scalar; if TRUE then a two-sided test is used.If
+FALSE, a one-sided test is used. Default: TRUE}
+
+\item{Lparam}{a vector of parameters for the drop-out Weibull distribution,
+See Details below. Default: NULL}
 }
 \value{
-OUTPUT_DESCRIPTION
+\item{eventN}{The total number of events}
+\item{totalN}{The total number of subjects}
 }
 \description{
-FUNCTION_DESCRIPTION
+\code{pwr2n.LR} calculates the total number of events and total
+number of subjects required given the provided design parameters based on either
+schoenfeld or freedman formula.
 }
 \details{
-DETAILS
+The total event number is determined only by \eqn{\alpha, \beta} and
+hazard ratio, i.e., \eqn{\lambda_1/\lambda_0}. Other design parameters such as
+enrollment period affects the event probability and thus the total sample size.
+A fixed duration design is assumed in the calculation. ALl patients are enrolled
+at a constant rate within \code{t_enrl} time and have at least \code{t_fup}
+time of follow-up. So the total study duration is \code{t_enrl}+\code{t_fup}.
+If drop-out is expected, a Weibull distribution with shape parameter -\eqn{\alpha}
+and scale parameter - \eqn{\beta} is considered. The CDF is
+\eqn{F(x)=1-exp(-(x/\beta)^\alpha)}.
 }
 \examples{
+l0 <- log(2)/14; HR <- 0.8; RR <- 2; t_enrl <- 12; t_fup <- 12;
+eg1 <- pwr2n.LR( method    = c("schoenfeld")
+                 ,l0
+                 ,l0*HR
+                 ,phi=RR
+                 ,t_enrl
+                 ,t_fup
+                 ,alpha     = 0.05
+                 ,beta      = 0.1
+                 ,two.side  = TRUE
+)
+# event number, total subjects, event probability
+c(eg1$eventN,eg1$totalN,eg1$eventN/eg1$totalN)
+
+# example 2: drop-out from an exponential with median time is 30
+eg2 <- pwr2n.LR( method    = c("schoenfeld")
+                 ,l0
+                 ,l0*HR
+                 ,phi=RR
+                 ,t_enrl
+                 ,t_fup
+                 ,alpha     = 0.05
+                 ,beta      = 0.1
+                 ,two.side  = TRUE
+                 ,Lparam = c(1,30/log(2))
+)
+# event number, total subjects, event probability
+c(eg2$eventN,eg2$totalN,eg2$eventN/eg2$totalN)
+
 \dontrun{
 if(interactive()){
  #EXAMPLE1
  }
 }
 }
+\references{
+Schoenfeld, D. (1981) The asymptotic properties of nonparametric
+tests for comparing survival distributions. Biometrika, 68,
+316–319.
+
+Freedman, L. S. (1982) Tables of the number of patients required
+in clinical trials using the logrank test. Statistics in medicine, 1, 121–129.
+}
 \seealso{
 \code{\link[stats]{integrate}},\code{\link[stats]{weighted.mean}},\code{\link[stats]{Normal}}
+}
+\author{
+Huan Cheng (hcheng1118@hotmail.com)
 }

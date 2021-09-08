@@ -219,8 +219,8 @@ pwr2n.maxLR<- function(entry   = 1
 
 
 
-
-  Nsize <- dnum/rho
+  eprob <- stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(1,ratio))
+  Nsize <- dnum/eprob
   #print(Nsize)
   #print(mean(c(pdat$C_E[num],pdat$E_E[num])))
   #print(num)
@@ -255,7 +255,7 @@ pwr2n.maxLR<- function(entry   = 1
   return(list( eventN  = dnum
                ,totalN = Nsize
                ,pwr = as.numeric(power)
-               ,prob_event =rho
+               ,prob_event =eprob
                ,L_trans = L_trans
                ,pdat = pdat
 
