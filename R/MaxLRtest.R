@@ -43,18 +43,39 @@ MaxLRtest <- function(dat
   ## correlation matrix
   rho_est <- stats::cov2cor(Vmat)
   if (side=="two.sided"){
-    crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",mean=rep(0,wn),sigma = rho_est)$quantile
     statistic <- max(abs(Zstat))
-    p.value <- 1-mvtnorm::pmvnorm(-1*statistic,statistic,mean=rep(0,wn),sigma = rho_est)[1]
+    ftwo <- function(i){
+      set.seed(i)
+      crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",mean=rep(0,wn),
+                               sigma = rho_est)$quantile
+      p.value <- 1-mvtnorm::pmvnorm(-1*statistic,statistic,mean=rep(0,wn),
+                                    sigma = rho_est)[1]
+      return(c(crit,p.value))
+    }
+    ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+    crit <- ftwod[1];  p.value <- ftwod[2]
   }else if (side=="greater"){
-    crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
     statistic <- max(abs(Zstat))*sign(Zstat[1])
-    p.value <- 1-pmvnorm(-Inf,statistic,mean=rep(0,wn),sigma = rho_est)[1]
-  }else if (side=="less"){
-    crit <- qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
-    statistic <- max(abs(Zstat))*sign(Zstat[1])
-    p.value <- 1-pmvnorm(statistic,Inf,mean=rep(0,wn),sigma = rho_est)[1]
+    ftwo <- function(i){
+      set.seed(i)
+      crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+      p.value <- 1-pmvnorm(-Inf,statistic,mean=rep(0,wn),sigma = rho_est)[1]
+      return(c(crit,p.value))
+    }
+    ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+    crit <- ftwod[1];  p.value <- ftwod[2]
 
+  }else if (side=="less"){
+    statistic <- max(abs(Zstat))*sign(Zstat[1])
+    ftwo <- function(i){
+      set.seed(i)
+      crit <- qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+      p.value <- 1-pmvnorm(statistic,Inf,mean=rep(0,wn),sigma = rho_est)[1]
+      return(c(crit,p.value))
+    }
+
+    ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+    crit <- ftwod[1];  p.value <- ftwod[2]
   }
 
   res <- statistic>=crit

@@ -4,18 +4,18 @@
 \alias{cal_event}
 \title{FUNCTION_TITLE}
 \usage{
-cal_event(phi, lambda1, lambda0, t_enrl, t_fup, l_shape, l_scale)
+cal_event(ratio, lambda1, lambda0, entry, fup, l_shape, l_scale)
 }
 \arguments{
-\item{phi}{PARAM_DESCRIPTION}
+\item{ratio}{PARAM_DESCRIPTION}
 
 \item{lambda1}{PARAM_DESCRIPTION}
 
 \item{lambda0}{PARAM_DESCRIPTION}
 
-\item{t_enrl}{PARAM_DESCRIPTION}
+\item{entry}{PARAM_DESCRIPTION}
 
-\item{t_fup}{PARAM_DESCRIPTION}
+\item{fup}{PARAM_DESCRIPTION}
 
 \item{l_shape}{PARAM_DESCRIPTION}
 

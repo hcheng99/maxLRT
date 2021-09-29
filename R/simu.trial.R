@@ -4,11 +4,12 @@ simu.trial <- function(type=c("event","time")
                        # target event (event type)/fup time (time )
                        ,bsl_dist=c("weibull","loglogistic")
                        ,bsl_param   # alpha=1 corresponds to exponential
-                       ,drop_param
-                       ,entry_pdf=function(x){(1/trial_param[2])*(x>=0&x<=trial_param[2])}
+                       ,drop_param0
+                       ,drop_param1=drop_param0
+                       ,entry_pdf0=function(x){(1/trial_param[2])*(x>=0&x<=trial_param[2])}
+                       ,entry_pdf1=entry_pdf0
                        ,HR_fun #the non proportion hazard function
-                       ,allocation_ratio # # of trt/# of placebo
-                       ,seed
+                       ,ratio # # of trt/# of placebo
                        ,upInt=100
                        ,print=TRUE
 ){
@@ -38,43 +39,63 @@ simu.trial <- function(type=c("event","time")
   #* Simulate Event Time
   #****************************
   if (bsl_dist=="weibull"){
-    set.seed(seed)
+    #set.seed(seed)
     T_0 <- stats::rweibull(n0,a,1/b)
     #-- get the cummulative hazard and survival function----#
     Hf <- function(t){exp(-1* a*b*stats::integrate( function(x){(x*b)^(a-1)*HR_fun(x)},0,t)$value)}
   }else if (bsl_dist=="loglogistic"){
-    set.seed(seed)
+    #set.seed(seed)
     T_0 <- exp(stats::rlogis(n0,log(b),1/a))
     Hf <- function(t){exp(-1* a/b*integrate( function(x){(x/b)^{a-1}/(1+(x/b)^a)*HR_fun(x)},0,t)$value)}
   }
   gen_t <- function(y){stats::uniroot(function(x){Hf(x)-y},interval = c(0,upInt),extendInt="yes")$root}
-  set.seed(seed*10)
+ # set.seed(seed*10)
   U1 <- stats::runif(n1)
-  T_1 <-lapply(U1, gen_t) %>%unlist%>%as.vector()
+  T_1 <-as.vector(unlist(lapply(U1, gen_t)))
   Tm<-c(T_0,T_1)
   ## in extreme case, time is 0, add 0.1;
   #****************************
   #* Simulate drop-out Time
   #****************************
+  if (missing(drop_param0)&missing(drop_param1)){
+    warning("No drop-out parameters are provided. Drop-out is not considered
+            in the simulation.")
+  }else if (missing(drop_param0)){
+    drop_param0 <- drop_param1
+  }else if (missing(drop_param1)){
+    drop_param1 <- drop_param0
+  }
   Tm <- ifelse(Tm==0,0.1,Tm)
-  if (!missing(drop_param)){
-    a_drop <- drop_param[1]
-    b_drop <- drop_param[2]
-    set.seed(seed*99)
-    drop_time <- stats::rweibull(t_p1,a_drop,1/b_drop)
+  if (!missing(drop_param0)&!missing(drop_param1)){
+    a0_drop <- drop_param0[1]
+    b0_drop <- drop_param0[2]
+    a1_drop <- drop_param1[1]
+    b1_drop <- drop_param1[2]
+    #set.seed(seed*99)
+    drop_time0 <- stats::rweibull(n0,a0_drop,1/b0_drop)
+    drop_time1 <- stats::rweibull(n1,a1_drop,1/b1_drop)
+    drop_time <- c(drop_time0,drop_time1)
+
   }else{
-    drop_time <- rep(1:length(t_p1),Inf)
+    drop_time <- rep(Inf,t_p1)
   }
   #****************************
   #* Simulate entry Time
   #****************************
   #- create the CDF;
-  ent_cdf <- function(t){stats::integrate(entry_pdf,lower=0,upper=t)$value}
-  gen_ent <- function(y){stats::uniroot(function(x){ent_cdf(x)-y},interval = c(0,upInt),extendInt="yes")$root}
+  ent_cdf0 <- function(t){stats::integrate(entry_pdf0,lower=0,upper=t)$value}
+  gen_ent0 <- function(y){stats::uniroot(function(x){ent_cdf0(x)-y},
+                                  interval = c(0,upInt),extendInt="yes")$root}
+  ent_cdf1 <- function(t){stats::integrate(entry_pdf1,lower=0,upper=t)$value}
+  gen_ent1 <- function(y){stats::uniroot(function(x){ent_cdf1(x)-y},
+                                  interval = c(0,upInt),extendInt="yes")$root}
 
-  set.seed(seed+1)
-  tu0 <- runif(t_p1)
-  t0 <-lapply(tu0, gen_ent) %>%unlist%>%as.vector()
+  #set.seed(seed+1)
+  tu0_0 <- runif(n0)
+  tu0_1 <- runif(n1)
+  t0_0 <-as.vector(unlist(lapply(tu0_0, gen_ent0)))
+  t0_1 <-as.vector(unlist(lapply(tu0_1, gen_ent1)))
+  t0 <- c(t0_0,t0_1)
   ot <- t0+Tm
 
   dat <- data.frame(id=1:t_p1,ent=t0,time=Tm,trt=trt,ot=ot,
@@ -85,9 +106,13 @@ simu.trial <- function(type=c("event","time")
     dat$i1 <- min_ind0==1
     dat <- dat[order(dat$ot),]
     dat$c0 <- cumsum(dat$i1)
+    if (max(dat$c0)<t_p3){stop(paste("The target event "),t_p3,
+                               " cannot achieve. Please check the parameters
+                               for event, entry and drop-out parameters")}
+
     Dur <- min(dat[dat$c0==t_p3,]$ot )
     }else{
-    Dur <- t_p2+fup # the length of study
+    Dur <- t_p2+t_p3 # the length of study
   }
   min_ind <- apply(cbind(dat$ot,Dur,dat$ot_drop),1,which.min)
   status <- c("event","end of study","drop-out")
@@ -99,14 +124,14 @@ simu.trial <- function(type=c("event","time")
   final <- with (dat,data.frame(
     id=id
     ,group=trt
-    ,entry.time=ent
-    ,event.time=time
-    ,drop.time=drop_time
-    ,obs.time=tot_len
     ,aval=t_val
     ,cnsr=cnsr
     ,cnsr.desc=cnsr_desc
     ,event=1-cnsr
+    ,entry.time=ent
+    ,event.time=time
+    ,drop.time=drop_time
+    ,obs.time=tot_len
   )
   )
   #table(final$group,final$cnsr.desc)

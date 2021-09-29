@@ -29,7 +29,7 @@ CrtTM <- function(Plist,K=10){
 #*********************************************
 # CrtTM_C ----
 ## function to create transition matrix with administered censoring
-CrtTM_C <- function(Plist,K=10,a,b,i){
+CrtTM_C0 <- function(Plist,K=10,a,b,i=i){
   # a: entry time
   # b: follow-up time
   # i: current unit
@@ -49,5 +49,50 @@ CrtTM_C <- function(Plist,K=10,a,b,i){
     tranM[5,3] <- 1-sum(tranM[1:2,3])
     tranM[5,4] <- 1-sum(tranM[1:2,4])
   }
+  return(tranM)
+}
+
+#*********************************************
+# CrtTM_C ----
+## function to create transition matrix with specified enrollment
+CrtTM_C <- function(Plist,K=10,tott,epdf0,epdf1,i=i){
+  # a: entry time
+  # b: follow-up time
+  # i: current unit
+  # K: subinterval per unit time
+  Plist[2] <- 1-exp(-Plist[2])
+  Plist[5] <- 1-exp(-Plist[5])
+  ylist <- unlist(lapply(Plist,function(x){1-(1-x)^{1/K}}) )
+  Np <- tott*K
+  epoint <- Np-(i-1)
+
+
+  tmp0 <- stats::integrate( epdf0,(epoint-1)/Np,epoint/Np)$value/
+    stats::integrate( epdf0,0/Np,epoint/Np)$value
+
+  tmp1 <- stats::integrate( epdf1,(epoint-1)/Np,epoint/Np)$value/
+    stats::integrate( epdf1,0/Np,epoint/Np)$value
+
+
+  tranM <- matrix(c(1,0,0,0,0,
+                    0,1,0,0,0,
+                    ylist[1:2],1-sum(ylist[1:3],tmp0),ylist[3],tmp0,
+                    ylist[4:6],1-sum(ylist[4:6],tmp1),tmp1,
+                    0,0,0,0,1), ncol=5)
+
+  if (tmp1>=1){
+    tranM[3:4,3] <- 0
+    tranM[5,3] <- 1-sum(tranM[1:2,3])
+  }
+  if (tmp0>=1){
+    tranM[3:4,4] <- 0
+    tranM[5,4] <- 1-sum(tranM[1:2,4])
+  }
+
+  if (sum(tranM<0) >0){
+    print(i)
+    print(tranM)
+    stop("The transition matrix has negative values. Please check!")}
+
   return(tranM)
 }

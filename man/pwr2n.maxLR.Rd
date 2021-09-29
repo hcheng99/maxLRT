@@ -7,17 +7,19 @@
 pwr2n.maxLR(
   entry = 1,
   fup = 1,
-  k = 100,
-  trans.prob,
+  CtrlHaz,
   hazR,
-  Wlist,
+  transP1,
+  transP0,
+  Wlist = list(function(x) {     x^0 }),
+  entry_pdf0 = function(x) {     (1/entry) * (x >= 0 & x <= entry) },
+  entry_pdf1 = entry_pdf0,
   ratio = 1,
   alpha = 0.05,
   beta = 0.1,
-  two.side = TRUE,
-  plot = TRUE,
-  nocensor = FALSE,
-  criteria = 100
+  alternative = c("two.sided"),
+  criteria = 500,
+  k = 100
 )
 }
 \arguments{
@@ -25,13 +27,23 @@ pwr2n.maxLR(
 
 \item{fup}{PARAM_DESCRIPTION, Default: 1}
 
-\item{k}{PARAM_DESCRIPTION, Default: 100}
-
-\item{trans.prob}{PARAM_DESCRIPTION}
+\item{CtrlHaz}{PARAM_DESCRIPTION}
 
 \item{hazR}{PARAM_DESCRIPTION}
 
-\item{Wlist}{PARAM_DESCRIPTION}
+\item{transP1}{PARAM_DESCRIPTION}
+
+\item{transP0}{PARAM_DESCRIPTION}
+
+\item{Wlist}{PARAM_DESCRIPTION, Default: list(function(x) {
+x^0
+})}
+
+\item{entry_pdf0}{PARAM_DESCRIPTION, Default: function(x) {
+(1/entry) * (x >= 0 & x <= entry)
+}}
+
+\item{entry_pdf1}{PARAM_DESCRIPTION, Default: entry_pdf0}
 
 \item{ratio}{PARAM_DESCRIPTION, Default: 1}
 
@@ -39,13 +51,11 @@ pwr2n.maxLR(
 
 \item{beta}{PARAM_DESCRIPTION, Default: 0.1}
 
-\item{two.side}{PARAM_DESCRIPTION, Default: TRUE}
+\item{alternative}{PARAM_DESCRIPTION, Default: c("two.sided")}
 
-\item{plot}{PARAM_DESCRIPTION, Default: TRUE}
+\item{criteria}{PARAM_DESCRIPTION, Default: 500}
 
-\item{nocensor}{PARAM_DESCRIPTION, Default: FALSE}
-
-\item{criteria}{PARAM_DESCRIPTION, Default: 100}
+\item{k}{PARAM_DESCRIPTION, Default: 100}
 }
 \value{
 OUTPUT_DESCRIPTION
@@ -64,7 +74,6 @@ if(interactive()){
 }
 }
 \seealso{
-\code{\link[stats]{stepfun}},\code{\link[stats]{weighted.mean}}
+\code{\link[stats]{cor}},\code{\link[stats]{weighted.mean}}
 \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
-\code{\link[graphics]{par}},\code{\link[graphics]{lines}},\code{\link[graphics]{legend}}
 }

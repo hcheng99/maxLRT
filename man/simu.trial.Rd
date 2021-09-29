@@ -2,63 +2,53 @@
 % Please edit documentation in R/oxy-simu.trial.R
 \name{simu.trial}
 \alias{simu.trial}
-\title{Simulate Survival Trial Data}
+\title{FUNCTION_TITLE}
 \usage{
 simu.trial(
   type = c("event", "time"),
   trial_param,
   bsl_dist = c("weibull", "loglogistic"),
   bsl_param,
-  drop_param,
-  entry_pdf = function(x) {     (1/trial_param[2]) * (x >= 0 & x <= trial_param[2]) },
+  drop_param0,
+  drop_param1 = drop_param0,
+  entry_pdf0 = function(x) {     (1/trial_param[2]) * (x >= 0 & x <= trial_param[2]) },
+  entry_pdf1 = entry_pdf0,
   HR_fun,
-  allocation_ratio,
-  seed,
+  ratio,
   upInt = 100,
   print = TRUE
 )
 }
 \arguments{
-\item{type}{indicates whether event-driven trial ("event) or fixed study duration
-trial ("time"), Option: c("event", "time")}
+\item{type}{PARAM_DESCRIPTION, Default: c("event", "time")}
 
-\item{trial_param}{a vector of length 3 with components for required subject size, enrollment
-time and required number of events ("event" type trial)/follow-up time ("time" type trial)}
+\item{trial_param}{PARAM_DESCRIPTION}
 
-\item{bsl_dist}{indicates the survival distribution for control group, option: c("weibull", "loglogistic")}
+\item{bsl_dist}{PARAM_DESCRIPTION, Default: c("weibull", "loglogistic")}
 
-\item{bsl_param}{a vector of length 2 with the shape and scale parameter for the
-survival distribution of control group}
+\item{bsl_param}{PARAM_DESCRIPTION}
 
-\item{drop_param}{a vector of length 2 with shape and scale parameter for the
-weibull distribution of drop-out time}
+\item{drop_param0}{PARAM_DESCRIPTION}
 
-\item{entry_pdf}{a function describing the pdf of the entry time. The default
-is uniform enrollment, Default: function(x) {
-(1/trial_param\link{2}) * (x >= 0 & x <= trial_param\link{2})
-}}
+\item{drop_param1}{PARAM_DESCRIPTION, Default: drop_param0}
 
-\item{HR_fun}{a function describing the hazard ratio function between treatment
-and control group}
+\item{entry_pdf0}{PARAM_DESCRIPTION}
 
-\item{allocation_ratio}{allocation ratio between treatment and control group.
-For example, \code{allocation_ratio}=2 if 2:1 allocation is used.}
+\item{entry_pdf1}{PARAM_DESCRIPTION, Default: entry_pdf0}
 
-\item{seed}{a single value, specifying seed for random generation}
+\item{HR_fun}{PARAM_DESCRIPTION}
 
-\item{upInt}{a value indicating the upper bound usedin the uniroot function.
-See details.  Default: 100}
+\item{ratio}{PARAM_DESCRIPTION}
 
-\item{print}{a logical indicating whether basic information summary is printed
-to the console or not, Default: TRUE}
+\item{upInt}{PARAM_DESCRIPTION, Default: 100}
+
+\item{print}{PARAM_DESCRIPTION, Default: TRUE}
 }
 \value{
 OUTPUT_DESCRIPTION
 }
 \description{
-\code{simu.trial} simulates survival data allowing flexible input
-of design parameters. It supports both event-driven design and fixed study duration
-design.
+FUNCTION_DESCRIPTION
 }
 \details{
 DETAILS

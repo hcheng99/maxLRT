@@ -1,22 +1,27 @@
 
-#*********************************************
 
 ###input parameters
 #' @title FUNCTION_TITLE
 #' @description FUNCTION_DESCRIPTION
 #' @param entry PARAM_DESCRIPTION, Default: 1
 #' @param fup PARAM_DESCRIPTION, Default: 1
-#' @param k PARAM_DESCRIPTION, Default: 100
-#' @param trans.prob PARAM_DESCRIPTION
+#' @param CtrlHaz PARAM_DESCRIPTION
 #' @param hazR PARAM_DESCRIPTION
-#' @param Wlist PARAM_DESCRIPTION
+#' @param transP1 PARAM_DESCRIPTION
+#' @param transP0 PARAM_DESCRIPTION
+#' @param Wlist PARAM_DESCRIPTION, Default: list(function(x) {
+#'    x^0
+#'})
+#' @param entry_pdf0 PARAM_DESCRIPTION, Default: function(x) {
+#'    (1/entry) * (x >= 0 & x <= entry)
+#'}
+#' @param entry_pdf1 PARAM_DESCRIPTION, Default: entry_pdf0
 #' @param ratio PARAM_DESCRIPTION, Default: 1
 #' @param alpha PARAM_DESCRIPTION, Default: 0.05
 #' @param beta PARAM_DESCRIPTION, Default: 0.1
-#' @param two.side PARAM_DESCRIPTION, Default: TRUE
-#' @param plot PARAM_DESCRIPTION, Default: TRUE
-#' @param nocensor PARAM_DESCRIPTION, Default: FALSE
-#' @param criteria PARAM_DESCRIPTION, Default: 100
+#' @param alternative PARAM_DESCRIPTION, Default: c("two.sided")
+#' @param criteria PARAM_DESCRIPTION, Default: 500
+#' @param k PARAM_DESCRIPTION, Default: 100
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
 #' @examples 
@@ -26,153 +31,56 @@
 #'  }
 #' }
 #' @seealso 
-#'  \code{\link[stats]{stepfun}},\code{\link[stats]{weighted.mean}}
+#'  \code{\link[stats]{cor}},\code{\link[stats]{weighted.mean}}
 #'  \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
-#'  \code{\link[graphics]{par}},\code{\link[graphics]{lines}},\code{\link[graphics]{legend}}
 #' @rdname pwr2n.maxLR
 #' @export 
-#' @importFrom stats stepfun weighted.mean
+#' @importFrom stats cov2cor weighted.mean
 #' @importFrom mvtnorm qmvnorm pmvnorm
-#' @importFrom graphics par lines legend
 pwr2n.maxLR<- function(entry   = 1
                      ,fup      = 1
-                     ,k        = 100
-                     ,trans.prob
+                     ,CtrlHaz
                      ,hazR
-                     ,Wlist
+                     ,transP1
+                     ,transP0
+                     ,Wlist = list(function(x){ x^0})
+                     ,entry_pdf0=function(x){(1/entry)*(x>=0&x<=entry)}
+                     ,entry_pdf1=entry_pdf0
                      ,ratio    = 1
                      ,alpha    = 0.05
                      ,beta     = 0.1
-                     ,two.side = TRUE
-                     ,plot     = TRUE
-                     ,nocensor = FALSE
-                     ,criteria = 100
+                     ,alternative = c("two.sided")
+                     ,criteria = 500
+                     ,k        = 100
 ){
+
+  if (!alternative %in% c("two.sided","greater","less")){
+    stop("The alternative must be one of 'two.sided','greater','less'.")
+  }
   tot_time <- entry+fup
   num <- k*tot_time
-
-  #x <- seq(0.01,tot_time,length=k)
+  # create the subintervals
   x <- seq(0,tot_time,by=1/k)
-  haz_val <- hazR(x)*trans.prob[5]
+  ctrlRate <- CtrlHaz(x)
+  haz_val <- hazR(x)*ctrlRate
   haz_point <- x*k
- # hazard <- stats::stepfun(haz_point,c(haz_val,haz_val[length(haz_val)]),
-  #                  right=TRUE)
-  hazard <- stats::stepfun(haz_point,c(haz_val[1],haz_val),
-                           right=FALSE)
-  ##initial states for treatment
-  D1 <- c(0,0,1,0,0)
-  ##initial states for control
-  D0 <- c(0,0,0,1,0)
-  temp <- diag(rep(1,4))
-  pdat <- matrix(NA,nrow=num,ncol=21)
-  ti <-0
-  l <- 1
-  L_trans <- list()
-  for (i in 1:num){
-    j <- ceiling(i/k)
-    trans.prob[2] <- hazard(i)
-    # before a, there is no censor
-    if (nocensor==FALSE){
-      if (j <=fup){
-        L_trans[[i]] <- cbind(rbind(CrtTM(Plist = trans.prob,K=k),rep(0,4)),
-                              c(0,0,0,0,1))
+  ## load the transition matrix
+  load <- trans.mat(num=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
+                    haz_point=haz_point,ratio=ratio,
+                    transP1=transP1,transP0=transP0,k=k,
+                    fup=fup,entry=entry,entry_pdf0=entry_pdf0,
+                    entry_pdf1=entry_pdf1)
 
-      }else {
-        L_trans [[i]] <- CrtTM_C(Plist = trans.prob,K=k,a=entry,b=fup,i=i)
-
-      }
-    }else {
-      L_trans[[i]] <- cbind(rbind(CrtTM(Plist = trans.prob,K=k),rep(0,4)),
-                            c(0,0,0,0,1))
-    }
-
-    ti <- ti+1/k
-    if (i==1){temp1 <- L_trans[[i]]%*%D1 ; temp0 <- L_trans[[i]]%*%D0
-    } else {temp1 <- L_trans[[i]]%*%temp1; temp0 <- L_trans[[i]]%*%temp0;}
-    pdat[i,1:11] <- c(ti,t(temp1),t(temp0))
-    if (i==1) {
-      #phi
-      pdat[i,12] <- 1
-      ## hazard of dying for trt=1
-      pdat[i,13] <- pdat[i,3]
-      # for trt=0
-      pdat[i,14] <- pdat[i,8]
-
-    }
-    else {
-      #phi
-      pdat[i,12] <- sum(pdat[i-1,5],pdat[i-1,4])/sum(pdat[i-1,10],pdat[i-1,9])
-     # pdat[i,12] <- round(pdat[i,12],digits=3)
-      # f0 <- function(x) {-exp(-pdat[i,1]*x)+exp(-pdat[i-1,1]*x)-pdat[i,3]+pdat[i-1,3]}
-      # #f0 <- function(x) {-exp(-pdat[i,1]*x)+exp(-pdat[i-1,1]*x)+exp(-pdat[i,1])-exp(-pdat[i-1,1])}
-      # f1 <- function(x) {-exp(-pdat[i,1]*x)+exp(-pdat[i-1,1]*x)-pdat[i,7]+pdat[i-1,7]}
-      # pdat[i,11] <- uniroot(f0,interval = c(0.8,1),extendInt = "yes")$root
-      # pdat[i,12] <- uniroot(f1,interval = c(0,0.5),extendInt = "yes")$root
-      #hazard1
-      pdat[i,13] <- (pdat[i,3]-pdat[i-1,3])/(pdat[i-1,5]+pdat[i-1,4])
-      #hazard 0
-      pdat[i,14] <- (pdat[i,8]-pdat[i-1,8])/(pdat[i-1,9]+pdat[i-1,10])
-      #pdat[i,11] <- 1-(pdat[i,4]+pdat[i,5])/(pdat[i-1,5]+pdat[i-1,4])
-      #pdat[i,12] <- 1-(pdat[i,8]+pdat[i,9])/(pdat[i-1,9]+pdat[i-1,8])
-      # pdat[i,11]=1
-      # pdat[i,12]=0.5
-    }
-    #theta
-    pdat[i,15] <- pdat[i,13]/pdat[i,14]
-    # pdat[i,13] <- 2
-    #gamma
-    pdat[i,16] <- pdat[i,12]*pdat[i,15]*ratio/(1+pdat[i,12]*pdat[i,15]*ratio)-
-      pdat[i,12]*ratio/(1+pdat[i,12]*ratio)
-    #eta
-    pdat[i,17] <- pdat[i,12]*ratio/(1+pdat[i,12]*ratio)^2
-    # print(pdat[i,])
-  }
-  #pdat
-  rho <- (pdat[num,3]*ratio+pdat[num,8])/(ratio+1)
-
-  ## sample size
-  for (i in 1:num){
-    ## S1
-    #pdat[i,20] <- sum(pdat[i,5],pdat[i,4])
-    #pdat[i,20] <- exp(-sum(pdat[1:i,13]))
-    pdat[i,20] <- prod(1-pdat[1:i,13])
-    ## S0
-    # pdat[i,21] <- sum(pdat[i,10],pdat[i,9])
-    #pdat[i,21] <- exp(-sum(pdat[1:i,14]))
-    pdat[i,21] <- prod(1-pdat[1:i,14])
-    ## mean survival
-    # pdat[i,19] <- mean(sum(pdat[i,5],pdat[i,4]),sum(pdat[i,10],pdat[i,9]))
-    pdat[i,19] <- stats::weighted.mean(c(pdat[i,20],pdat[i,21]),w=c(ratio,1))
-    ## rho
-    if (i==1){
-      pdat[i,18] <- (pdat[i,3]*ratio+pdat[i,8])/rho/(ratio+1)
-    }else
-    {
-      pdat[i,18] <- ((pdat[i,3]-pdat[i-1,3])*ratio+pdat[i,8]-pdat[i-1,8])/rho/(ratio+1)
-
-    }
-  }
-
-  pdat <- as.data.frame(pdat)
-  names(pdat) <-
-    c("ti","E_L","E_E","E_Ae","E_Ac","E_C","C_L","C_E","C_Ae",
-      "C_Ac","C_C","phi","hazard_E","hazard_C","theta","gamma","eta",
-      "rho","S","S1","S0")
-
-  #pdat$rho <- round(pdat$rho,digits=4)
-
-  # w_f <- function(x){2*x-1}
-  # w_f <- function(x){1}
-  # wgt <- wgt_fun(pdat$S)
-  ## number of weight functions
-
+  pdat <- load$pdat
   wn <- length(Wlist)
   W <- matrix(NA,nrow=nrow(pdat),ncol=wn)
   ## calculate the variance-covariance matrix
   Vmat <- matrix(NA,nrow=wn,ncol=wn)
   event <- c()
-  if (two.side==TRUE){
+  if (alternative=="two.sided"){
     part2=(qnorm(1-alpha/2)+qnorm(1-beta))^2
+  }else {
+    part2=(qnorm(1-alpha)+qnorm(1-beta))^2
   }
   for (j in 1:wn){
     W[,j] <- Wlist[[j]](pdat$S)
@@ -181,13 +89,11 @@ pwr2n.maxLR<- function(entry   = 1
     part3=t(pdat$rho)%*%(pdat$gamma*wgt)
     part3=part3^2
     event[j] <- part1*part2/part3
-
   }
   #print(c(part1,part2,part3))
   ## get the min and max sample size
   E_min=min(event)
   E_max=max(event)
-  #print(event)
   eta=-1
   dnum <- E_min
   count <- 0
@@ -198,70 +104,167 @@ pwr2n.maxLR<- function(entry   = 1
         Vmat[k1,k2] <-  dnum*t(W[,k1]*W[,k2]) %*%(pdat$rho*pdat$eta)
       }
     }
-    rho_est <- cov2cor(Vmat)
+    rho_est <- stats::cov2cor(Vmat)
     mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))/sqrt(diag(Vmat))
-    crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
-                    mean=rep(0,wn),sigma = rho_est)$quantile
-    #print(crit)
-    # power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)+
-    #   pmvnorm(-Inf,-crit,mean=mu,sigma = rho_est)
-    power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
-    #print(crit)
-    #print(mu)
-    #print(power)
+    if (alternative=="two.sided"){
+      ftwo <- function(i){
+        #set.seed(i)
+        crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
+                                 mean=rep(0,wn),sigma = rho_est)$quantile
+        power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
+        return(c(crit,power))
+      }
+      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+      power <- ftwod[2]
+      crit <- ftwod[1]
+    }else if (alternative=="less"){ # l1 <l0
+      ftwo <- function(i){
+       # set.seed(i)
+        crit <- mvtnorm::qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+        power <- 1-mvtnorm::pmvnorm(crit,Inf,mean=mu,sigma = rho_est)[1]
+        return(c(crit,power))
+      }
+      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+      crit <- ftwod[1];  power <- ftwod[2]
+    }else if (alternative=="greater"){
+      ftwo <- function(i){
+        #set.seed(i)
+        crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+        power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)[1]
+        return(c(crit,power))
+      }
+      ftwod <-  apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+      crit <- ftwod[1];  power <- ftwod[2]
+    }
+
     if (power<1-beta&count<criteria) {dnum<-dnum+1}
     else if (count>=criteria){
       warning(paste0("the algoritm doesn't converge within ",criteria," iterations;
-                     the current power is ",power,"; event size: ",dnum))
+                     the current power is ",power,"; event size: ",dnum,"
+                     please consider increase the criteria option."))
       ;break}
     else {break}
-  }
 
-
+}
 
   eprob <- stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(1,ratio))
   Nsize <- dnum/eprob
-  #print(Nsize)
-  #print(mean(c(pdat$C_E[num],pdat$E_E[num])))
-  #print(num)
-  if (plot==TRUE){
-    Se1 <- exp(-trans.prob[2]*pdat$ti)
-    Se0 <- exp(-trans.prob[5]*pdat$ti)
-
-    graphics::par(mfrow=c(1,1))
-    with(pdat,
-         plot(ti,theta,cex=0.1,ylab="hazard ratio"))
-
-    with(pdat,{
-      plot(ti,S1,cex=0.1,lty=1,ylim=c(0,1),col=1)
-      graphics::lines(ti,S0,col=2,lty=2)
-
-    })
-    #lines(pdat$ti,Se1,col=3,lty=1)
-    #lines(pdat$ti,Se0,col=4,lty=2)
-    graphics::par(mar=c(5.1, 4.1, 8, 4.1), xpd=TRUE)
-    #legend("top",inset=c(0.1,-0.25),legend = c("Exp-S1", "Exp-S0","S1","S0"), lty=c(1,2,1,2), lwd = 1,
-    #       col=c(1,2,3,4), horiz = TRUE, cex = 1, seg.len=1, bty = 'n')
-    graphics::legend("top",inset=c(0.1,-0.25),legend = c("S1","S0"), lty=c(1,2,1,2), lwd = 1,
-           col=c(1,2,3,4), horiz = TRUE, cex = 1, seg.len=1, bty = 'n')
-    ## loss to follow-up
-    with(pdat,{
-      plot(ti,E_L,cex=0.1,lty=1,col=1,ylim=c(0,max(c(E_L,C_L))))
-      graphics::lines(ti,C_L,lty=2,col=2)
-    })
-  }
 
 
-  return(list( eventN  = dnum
-               ,totalN = Nsize
-               ,pwr = as.numeric(power)
-               ,prob_event =eprob
-               ,L_trans = L_trans
-               ,pdat = pdat
+  listall <- list( eventN  = dnum
+                ,totalN = Nsize
+                ,pwr = as.numeric(power)
+                ,prob_event =eprob
+                ,L_trans = load$L_trans
+                ,pdat = pdat
+                ,studytime=c(entry,fup)
+                ,RandomizationRatio=ratio
 
   )
-  )
+  class(listall) <-"MaxLRpwr"
+  return(listall)
+
 
 }
 
 #*********************************************
+#*show the survival plot/ hazards plots
+#*********************************************
+#' @title FUNCTION_TITLE
+#' @description FUNCTION_DESCRIPTION
+#' @param x PARAM_DESCRIPTION
+#' @param type PARAM_DESCRIPTION, Default: c("hazard", "survival", "dropout", "event", "censor")
+#' @param ... PARAM_DESCRIPTION
+#' @return OUTPUT_DESCRIPTION
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso 
+#'  \code{\link[graphics]{lines}},\code{\link[graphics]{legend}}
+#' @rdname plot.MaxLRpwr
+#' @export 
+#' @importFrom graphics lines legend
+plot.MaxLRpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),...) {
+  datM <- x$pdat
+  totalN <- x$totalN
+  ratio <- x$RandomizationRatio
+  if( missing(type)){ tval <- 0}
+  ## draw the survival curves
+  if (tval==0|"survival" %in% type ){
+    with(datM,{
+      plot(ti,S1,cex=0.1,lty=1,ylim=c(0,1),col=1,xlab="Time",
+           ylab="Survival Probability",main="Survival Curves",...)
+      graphics::lines(ti,S0,col=2,lty=2,...)
+      graphics::legend("bottomleft",legend=c("treatment","control"),
+                       col=1:2,lty=1:2,cex=0.8)
+
+    })
+  }
+
+  ## hazard functions
+  if (tval==0|"hazard" %in% type ){
+
+    ymax <- max(c(datM$hazard_C,datM$hazard_E))*1.1
+    with(datM,{
+      plot(ti,hazard_E,cex=0.1,lty=1,col=1,xlab="Time",ylab="Hazard Rate",
+           ylim=c(0,ymax),main="Hazard Curves",...)
+      graphics::lines(ti,hazard_C,col=2,lty=2,...)
+      graphics::legend("bottomright",legend=c("treatment","control"),
+                       col=1:2,lty=1:2,cex=0.8)
+    })
+    ## hazard ratio
+    with(datM,{
+      plot(ti,theta,cex=0.1,lty=1,col=1,xlab="Time",
+           ylim=c(min(theta)*0.9,max(theta)*1.1),
+           ylab="Hazard Ratio (treatment over control)",
+         main="Hazard Ratio over Time",...)
+
+
+    })
+
+  }
+  ## drop out
+  if (tval==0|"dropout" %in% type){
+    ymax <- max(c(datM$E_L,datM$C_L))*1.1
+    with(datM,{
+      plot(ti,E_L,cex=0.1,lty=1,col=1,xlab="Time",ylab="proporion of drop out",
+           ylim=c(0,ymax),main="Drop-out overtime",...)
+      graphics::lines(ti,C_L,col=2,lty=2,...)
+      graphics::legend("topleft",legend=c("treatment","control"),
+                       col=1:2,lty=1:2,cex=0.8)
+    })
+  }
+  ## censor
+  if (tval==0|"censor" %in% type){
+    ymax <- max(c(datM$E_C,datM$C_C))*1.1
+    with(datM,{
+      plot(ti,E_C,cex=0.1,lty=1,col=1,xlab="Time",
+           ylab="proporion of censor",
+           ylim=c(0,ymax),main="Administrative censoring overtime",...)
+      graphics::lines(ti,C_C,col=2,lty=2,...)
+      graphics::legend("topleft",legend=c("treatment","control"),
+                       col=1:2,lty=1:2,cex=0.8)
+    })
+  }
+  ##event number
+  if (tval==0|"event" %in% type ){
+    with(datM,{
+      plot(ti,round(eprob*totalN,digits=0),cex=0.1,lty=1,col=1,xlab="Time",
+           ylab="number of events",
+           main="Events over time",...)
+      graphics::lines(ti,round(E_E*totalN*ratio/(ratio+1),digits=0),col=2,lty=2,...)
+      graphics::lines(ti,round(C_E*totalN/(ratio+1),digits=0),col=3,lty=3,...)
+      graphics::legend("topleft",legend=c("overall","treatment","control"),
+                       col=1:3,lty=1:3,cex=0.8)
+    })
+  }
+
+
+#
+#   graphics::mtext(paste(paste0("Statistic",1:wn,sep=":"),round(x$stat.mat[,1],3),
+#                         collapse = "  "),side=3,cex=0.7)
+}
