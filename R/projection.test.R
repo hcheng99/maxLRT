@@ -2,7 +2,7 @@ projection.test <- function(dat
                         ,Wlist
                         ,base
                         ,alpha=0.05
-                        ,side=c("two.sided")
+
 ){
 
   ## transform the input data to the matrix ready for analysis
@@ -12,14 +12,13 @@ projection.test <- function(dat
   if (base=="Combined"){
 
     tnew0 <- c(1,
-               cumprod(chkV(datM$n.risk.x,1-datM$n.event.x/datM$n.risk.x))*table(dat$V3)[2]+
-                 cumprod(chkV(datM$n.risk.y,1-datM$n.event.y/datM$n.risk.y))*table(dat$V3)[1])
+               cumprod(chkV(datM$n.risk.x,1-datM$n.event.x/datM$n.risk.x))*table(dat[,3])[2]/nrow(dat)+
+                 cumprod(chkV(datM$n.risk.y,1-datM$n.event.y/datM$n.risk.y))*table(dat[,3])[1]/nrow(dat))
     tnew <- 1-tnew0[1:nrow(datM)]
-
   }else if (base=="KM"){
     # based on the pooled survival
     s_fit<- survival::survfit(Surv(dat[,1], dat[,2])~1 , data = dat)
-    f_s <- stepfun(s_fit$time,y=c(0,1-s_fit$surv),right = TRUE)
+    f_s <- stats::stepfun(s_fit$time,y=c(0,1-s_fit$surv),right = TRUE)
     tnew <- f_s(datM$time)
   }else if (base=="N"){
     # based on time/person at risk

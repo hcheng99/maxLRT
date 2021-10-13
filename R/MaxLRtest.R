@@ -1,10 +1,15 @@
+
 MaxLRtest <- function(dat
-                        ,Wlist
-                        ,base=c("Combined","KM","N")
-                        ,alpha=0.05
-                        ,side=c("two.sided")
+                      ,Wlist
+                      ,base=c("KM")
+                      ,alpha=0.05
+                      ,alternative=c("two.sided")
 
 ){
+
+  if (!missing(base)&!base %in% c("KM","Combined","N")){
+    stop("base must be one of 'KM','Combined','N'")
+  }
   ## transform the input data to the matrix ready for analysis
   datM <- load.mat(dat)
   ## only keep the timepoints with event
@@ -12,16 +17,18 @@ MaxLRtest <- function(dat
   if (base=="Combined"){
 
     tnew0 <- c(1,
-              cumprod(chkV(datM$n.risk.x,1-datM$n.event.x/datM$n.risk.x))*table(dat$V3)[2]+
-      cumprod(chkV(datM$n.risk.y,1-datM$n.event.y/datM$n.risk.y))*table(dat$V3)[1])
+               cumprod(chkV(datM$n.risk.x,1-datM$n.event.x/datM$n.risk.x))*table(dat[,3])[2]/nrow(dat)+
+                 cumprod(chkV(datM$n.risk.y,1-datM$n.event.y/datM$n.risk.y))*table(dat[,3])[1]/nrow(dat))
     tnew <- 1-tnew0[1:nrow(datM)]
 
-  }else if (base=="KM"){
+  }
+  if (base=="KM"|missing(base)){
     # based on the pooled survival
     s_fit<- survival::survfit(Surv(dat[,1], dat[,2])~1 , data = dat)
     f_s <- stats::stepfun(s_fit$time,y=c(0,1-s_fit$surv),right = TRUE)
     tnew <- f_s(datM$time)
-  }else if (base=="N"){
+  }
+  if (base=="N"){
     # based on time/person at risk
     # tnew <- datM$time/max(datM$time)
     tnew <- 1-datM$risk/nrow(dat)
@@ -42,10 +49,9 @@ MaxLRtest <- function(dat
   Zstat <- apply(W,2,function(x) {CalZ(x,data=datM)})
   ## correlation matrix
   rho_est <- stats::cov2cor(Vmat)
-  if (side=="two.sided"){
+  if (alternative=="two.sided"){
     statistic <- max(abs(Zstat))
     ftwo <- function(i){
-      set.seed(i)
       crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",mean=rep(0,wn),
                                sigma = rho_est)$quantile
       p.value <- 1-mvtnorm::pmvnorm(-1*statistic,statistic,mean=rep(0,wn),
@@ -53,29 +59,29 @@ MaxLRtest <- function(dat
       return(c(crit,p.value))
     }
     ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-    crit <- ftwod[1];  p.value <- ftwod[2]
-  }else if (side=="greater"){
+    crit <- as.numeric(ftwod[1]);  p.value <- as.numeric(ftwod[2])
+  }else if (alternative=="greater"){
     statistic <- max(abs(Zstat))*sign(Zstat[1])
     ftwo <- function(i){
-      set.seed(i)
+
       crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
       p.value <- 1-pmvnorm(-Inf,statistic,mean=rep(0,wn),sigma = rho_est)[1]
       return(c(crit,p.value))
     }
     ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-    crit <- ftwod[1];  p.value <- ftwod[2]
+    crit <- as.numeric(ftwod[1]);  p.value <- as.numeric(ftwod[2])
 
-  }else if (side=="less"){
+  }else if (alternative=="less"){
     statistic <- max(abs(Zstat))*sign(Zstat[1])
     ftwo <- function(i){
-      set.seed(i)
+
       crit <- qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
       p.value <- 1-pmvnorm(statistic,Inf,mean=rep(0,wn),sigma = rho_est)[1]
       return(c(crit,p.value))
     }
 
     ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-    crit <- ftwod[1];  p.value <- ftwod[2]
+    crit <- as.numeric(ftwod[1]);  p.value <- as.numeric(ftwod[2])
   }
 
   res <- statistic>=crit
@@ -95,17 +101,18 @@ MaxLRtest <- function(dat
 }
 
 plot.MaxLR <- function(x,...) {
-    datM <- x$details
-    xtime <- datM$time
-    wn <- ncol(datM)-7
-    plot(xtime,datM$n.event.x,cex=1,col=1,xlab="time",
-         ylab="weight",pch=1,ylim=c(-1,1))
-    for (i in 1:wn){
-      graphics::points(xtime,datM[,7+i],cex=0.3,col=1+i,pch=1+i)
-    }
+  datM <- x$details
+  xtime <- datM$time
+  wn <- ncol(datM)-7
+  plot(xtime,datM$n.event.x,cex=1,col=1,xlab="time",
+       ylab="weight",pch=1,ylim=c(-1,1),...)
+  for (i in 1:wn){
+    graphics::points(xtime,datM[,7+i],cex=0.3,col=1+i,pch=1+i)
+  }
 
-    graphics::legend("bottomright",legend=c("orginal data",paste("weight",1:wn)),
-           col=1:(wn+1),pch = 1:(wn+1),cex=0.8)
-    graphics::mtext(paste(paste0("Statistic",1:wn,sep=":"),round(x$stat.mat[,1],3),
-                collapse = "  "),side=3,cex=0.7)
+  graphics::legend("bottomright",legend=c("orginal data",paste("weight",1:wn)),
+                   col=1:(wn+1),pch = 1:(wn+1),cex=0.8)
+  graphics::mtext(paste(paste0("Statistic",1:wn,sep=":"),round(x$stat.mat[,1],3),
+                        collapse = "  "),side=3,cex=0.7)
 }
+

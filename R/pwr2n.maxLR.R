@@ -138,6 +138,7 @@ plot.MaxLRpwr<- function(x,type=c("hazard","survival","dropout","event","censor"
   datM <- x$pdat
   totalN <- x$totalN
   ratio <- x$RandomizationRatio
+  tval <-1
   if( missing(type)){ tval <- 0}
   ## draw the survival curves
   if (tval==0|"survival" %in% type ){

@@ -52,7 +52,6 @@ n2pwr.maxLR<- function(entry   = 1
   mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))/sqrt(diag(Vmat))
   if (alternative=="two.sided"){
     ftwo <- function(i){
-      set.seed(i)
       crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
                                mean=rep(0,wn),sigma = rho_est)$quantile
       power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
@@ -62,7 +61,6 @@ n2pwr.maxLR<- function(entry   = 1
     power <- ftwod[2]
   }else if (alternative=="less"){ # l1 <l0
     ftwo <- function(i){
-      set.seed(i)
       crit <- mvtnorm::qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
       power <- 1-mvtnorm::pmvnorm(crit,Inf,mean=mu,sigma = rho_est)[1]
       return(c(crit,power))
@@ -71,7 +69,6 @@ n2pwr.maxLR<- function(entry   = 1
     crit <- ftwod[1];  power <- ftwod[2]
   }else if (alternative=="greater"){
     ftwo <- function(i){
-      set.seed(i)
       crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
       power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)[1]
       return(c(crit,power))

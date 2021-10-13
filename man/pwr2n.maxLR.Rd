@@ -2,7 +2,7 @@
 % Please edit documentation in R/oxy-pwr2n.maxLR.R
 \name{pwr2n.maxLR}
 \alias{pwr2n.maxLR}
-\title{FUNCTION_TITLE}
+\title{Sample Size Calculation with Maximum Weighted Logrank Test}
 \usage{
 pwr2n.maxLR(
   entry = 1,
@@ -23,55 +23,169 @@ pwr2n.maxLR(
 )
 }
 \arguments{
-\item{entry}{PARAM_DESCRIPTION, Default: 1}
+\item{entry}{a numeric value indicating the enrollment time, Default: 1}
 
-\item{fup}{PARAM_DESCRIPTION, Default: 1}
+\item{fup}{a numeric value indicating the minimum follow-up time for subjects.
+, Default: 1}
 
-\item{CtrlHaz}{PARAM_DESCRIPTION}
+\item{CtrlHaz}{a function,  specifying the hazard function for control group.}
 
-\item{hazR}{PARAM_DESCRIPTION}
+\item{hazR}{a function, specifying the hazard ratio function between
+treatment and control group}
 
-\item{transP1}{PARAM_DESCRIPTION}
+\item{transP1}{a numeric vector of length 2, consisting of the transition
+probability from
+receiving treatment to drop-out (drop-out rate) and
+from receiving treatment to receiving control (drop-in rate) per time unit.}
 
-\item{transP0}{PARAM_DESCRIPTION}
+\item{transP0}{a numeric vector of length 2, consisting of the transition
+probability from
+receiving control to drop-out (drop-out rate) and
+from receiving control to receiving treatment (drop-in rate) per time unit.}
 
-\item{Wlist}{PARAM_DESCRIPTION, Default: list(function(x) {
-x^0
-})}
+\item{Wlist}{a list, consisting of weight functions applied to the test.
+The element of the list must be functions. Default is a list of one constant
+function, corresponding to the logrank test.}
 
-\item{entry_pdf0}{PARAM_DESCRIPTION, Default: function(x) {
+\item{entry_pdf0}{a function, indicating the probability density function (pdf)
+of enrollment time for control group. The default assumes a uniform distribution
+corresponding to the constant enrollment rate.
+Default: function(x) {
 (1/entry) * (x >= 0 & x <= entry)
 }}
 
-\item{entry_pdf1}{PARAM_DESCRIPTION, Default: entry_pdf0}
+\item{entry_pdf1}{a pdf of enrollment time for treatment
+group. See \code{entry_pdf0}, Default: assume same pdf as control group.}
 
-\item{ratio}{PARAM_DESCRIPTION, Default: 1}
+\item{ratio}{an integer, indicating the randomization ratio between treatment
+and control group, Default: 1}
 
-\item{alpha}{PARAM_DESCRIPTION, Default: 0.05}
+\item{alpha}{type I error rate, Default: 0.05}
 
-\item{beta}{PARAM_DESCRIPTION, Default: 0.1}
+\item{beta}{type II error rate, Default: 0.1}
 
-\item{alternative}{PARAM_DESCRIPTION, Default: c("two.sided")}
+\item{alternative}{a character string specifying the alternative hypothesis,
+must be one of "\code{two.sided}", "\code{greater}","\code{less}". See details.
+Default: c("\code{two.sided}")}
 
-\item{criteria}{PARAM_DESCRIPTION, Default: 500}
+\item{criteria}{an integer indicating the maximum iteration allowed in
+obtaning the number of events. See details , Default: 500}
 
-\item{k}{PARAM_DESCRIPTION, Default: 100}
+\item{k}{an integer, indicating number of sub-intervals per time unit,
+Default: 100}
 }
 \value{
-OUTPUT_DESCRIPTION
+An object of class "\code{maxLRT}" with corresponding \code{plot} function.
+The object is a list containing the following components:
+\item{eventN}{total number of events}
+\item{totalN}{total number of subjects}
+\item{pwr}{actual power given the number of events}
+\item{prob_event}{event probability at the end of trial}
+\item{L_trans}{a list, consisting of tranisition matrix at each inteval}
+\item{pdat}{ a data frame including all the intermediate variables in the calculation.
+see Details.}
+\item{studytime}{a vector of length 2, including the entry and follow-up time as input}
+\item{RandomizationRatio}{as input}
 }
 \description{
-FUNCTION_DESCRIPTION
+\code{pwr2n.maxLR} calculates the number of events and
+subjects required to achieve pre-specified power in the setup of two groups.
+The method extends the calculation in the framework of the Markov model by Lakatos, allowing
+for using the maximum weighted logrank tests with an arbitrary number of weight
+functions. If only one weight function is provided, the test is essentially
+the classic (weighted) logrank test.
 }
 \details{
-DETAILS
+The detailed calculation procedure can be found in the reference paper. The number
+of subjects is determined by several factors, including the control hazard, hazard
+ratio function, entry time and distribution, follow-up time, etc. The number of
+events is mainly determined by the control hazard and hazard ratio function.
+The study design assumes \code{entry} time units of
+enrollment and at least \code{fup} time units of follow-up. If enrollment
+time \code{entry} is set to zero, all subjects are enrolled simultaneously,
+so there is no staggered entry. Otherwise, if
+\code{entry} is greater than 0, administrative censoring is considered. The user-defined
+enrollment time function, hazard function for the control group and hazard ratio function can be either discrete or continuous.
+Various non-proportional hazards types are accommodated. See examples below.
+If multiple weight functions are provided in \code{Wlist}, a maximum weighted logrank
+test or combination test is implemented. An iterative procedure
+is used to obtain the event number based on the multivariate normal distribution.  Package
+\pkg{mvtnorm} is used to calculate the quantiles. Because the algorithm is slightly
+seed dependent, the quantiles are mean values of ten replicates.
+
+The "\code{alternative}" option supports both two-sided and one-sided test.
+Let \eqn{\Lambda_1} and \eqn{\Lambda_0} denote the cumulative hazard of
+treatment and control group. The \code{less} option tests
+\eqn{H_0: \Lambda_1 > \Lambda_0} against
+\eqn{H_a: \Lambda_1 <= \Lambda_0}. The \code{greater} option tests
+\eqn{H_0: \Lambda_1 < \Lambda_0} against \eqn{H_a: \Lambda_1 >= \Lambda_0}.
 }
 \examples{
 \dontrun{
 if(interactive()){
- #EXAMPLE1
+### Define weight functions weight functions
+timef1 <- function(x){1}
+timef2 <- function(x){(x)}
+timef3 <- function(x){1-x}
+timef5 <- function(x,pp=1/2){(x<=pp)*(-1/pp*x+1)+(x>pp)*(-1/(1-pp)*(x-pp))}
+W_4e <- list(timef1,timef2,timef3,timef5)
+t_enrl <- 5
+t_fup <- 5
+lmd0 <- -log(0.2)/10
+f_hr <- function(x){0.5*x^0}
+ratio <-1
+alpha <- 0.05
+beta <- 0.1
+## uniform enrollment, proportional hazards and logrank test
+ef <- function(x){(1/t_enrl)*(x>0&x<=t_enrl)}
+size1 <- maxLRT::pwr2n.maxLR(entry     = t_enrl
+                            ,fup      = t_fup
+                            ,k        = 100
+                            ,ratio    = ratio
+                            ,Wlist  = list(timef1)
+                            ,CtrlHaz=function(x){lmd0*x^0}
+                            ,transP1=c(0,0)
+                            ,transP0=c(0,0)
+                            ,hazR     = f_hr
+                            ,alpha    = alpha
+                            ,beta     = beta
+                            ,entry_pdf0=ef
+                            ,entry_pdf1 =ef
+)
+
+target_N <- round(size1$totalN,digits=0)
+target_E <- round(size1$eventN,digits=0)
+c(target_E,target_N)
+
+## delayed response with maximum weighted logrank test
+
+t_enry <- 12
+t_fup <- 18
+lmd0 <- log(2)/12
+f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+size <- maxLRT::pwr2n.maxLR(entry     = t_enrl
+                           ,fup      = t_fup
+                           ,k        = 100
+                           ,ratio    = ratio
+                           ,Wlist  = W_4e
+                           ,CtrlHaz=function(x){lmd0*x^0}
+                           ,transP1=c(0,0)
+                           ,transP0=c(0,0)
+                           ,hazR     = f_hr_delay
+                           ,alpha    = alpha
+                           ,beta     = beta
+
+
+)
+target_N <- round(size$totalN,digits=0)
+target_E <- round(size$eventN,digits=0)
+#'c(target_E,target_N)#'
  }
 }
+}
+\references{
+Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional
+hazards models. Statistics in medicine, 24(11), 1713-1723.
 }
 \seealso{
 \code{\link[stats]{cor}},\code{\link[stats]{weighted.mean}}

@@ -1,20 +1,14 @@
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param dat PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
-#' @seealso 
+#' @title Load data matrix for \code{MaxLRtest}
+#' @description prepare the intermediate dataset for \code{MaxLRtest} and
+#' \code{projection.test}
+#' @param dat input data set for \code{MaxLRtest} and \code{projection.test}
+#' @return
+#' the intermediate data set
+#' @seealso
 #'  \code{\link[survival]{survfit}}
 #'  \code{\link[zoo]{na.locf}}
 #' @rdname load.mat
-#' @export 
-#' @importFrom survival survfit
+#' @importFrom survival survfit Surv
 #' @importFrom zoo na.locf
 load.mat <- function(dat){
   ## dat: 1-3rd columns  are time, status and treatment
@@ -28,7 +22,7 @@ load.mat <- function(dat){
   }
 
 
-  fit <-  survival::survfit(Surv(var1, var2) ~var3)
+  fit <-  survival::survfit(survival::Surv(var1, var2) ~var3)
   dat0 <- data.frame(time = fit$time,
                      n.risk = fit$n.risk,
                      n.event = fit$n.event,

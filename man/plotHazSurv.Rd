@@ -2,46 +2,53 @@
 % Please edit documentation in R/oxy-plotHazSurv.R
 \name{plotHazSurv}
 \alias{plotHazSurv}
-\title{FUNCTION_TITLE}
+\title{Graphic Display of Hazard and Survival Function}
 \usage{
 plotHazSurv(
   bsl_dist = c("weibull", "loglogistic"),
   param = c(1.2, 0.03),
-  fun_list = fun_list,
+  fun_list,
   end,
   tit = c("Hazard Function", "Survival Function"),
-  pos = c(1, 2),
-  f_n = 1
+  pos = c(1, 2)
 )
 }
 \arguments{
-\item{bsl_dist}{PARAM_DESCRIPTION, Default: c("weibull", "loglogistic")}
+\item{bsl_dist}{a text must be one of (\code{"weibull"},\code{"loglogistic"})}
 
-\item{param}{PARAM_DESCRIPTION, Default: c(1.2, 0.03)}
+\item{param}{a vector of length 2, specifying the shape and rate (1/scale)
+parameter of the \code{bsl_dist} distribution, Default: c(1.2, 0.03)}
 
-\item{fun_list}{PARAM_DESCRIPTION, Default: fun_list}
+\item{fun_list}{a list of hazard ratio functions}
 
-\item{end}{PARAM_DESCRIPTION}
+\item{end}{a value specifying the duration of the curve}
 
-\item{tit}{PARAM_DESCRIPTION, Default: c("Hazard Function", "Survival Function")}
+\item{tit}{a vector specifying the titles of each graph, Default: c("Hazard Function", "Survival Function")}
 
-\item{pos}{PARAM_DESCRIPTION, Default: c(1, 2)}
-
-\item{f_n}{PARAM_DESCRIPTION, Default: 1}
+\item{pos}{a graphic parameter in the form of c(nr,nc). Subsequent
+figures will be drawn in an nr-by-nc array, Default: c(1, 2)}
 }
 \value{
-OUTPUT_DESCRIPTION
+graphic display of hazard and survival functions
 }
 \description{
-FUNCTION_DESCRIPTION
-}
-\details{
-DETAILS
+Plot the hazard and survival function of the input control
+group distribution (weibull or loglogistic) and a list of
+arbitrary hazard ratio functions.
 }
 \examples{
 \dontrun{
 if(interactive()){
- #EXAMPLE1
+
+plotHazSurv(
+ bsl_dist=c("weibull")
+ ,param=c(1.2,1/30)
+ ,fun_list=list(function(x){x^0*0.7})
+ ,40
+ ,tit= c("Hazard Function","Survival Function")
+ ,pos=c(1,2)
+)
+
  }
 }
 }

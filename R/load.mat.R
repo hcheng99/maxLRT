@@ -10,7 +10,7 @@ load.mat <- function(dat){
   }
 
 
-  fit <-  survival::survfit(Surv(var1, var2) ~var3)
+  fit <-  survival::survfit(survival::Surv(var1, var2) ~var3)
   dat0 <- data.frame(time = fit$time,
                      n.risk = fit$n.risk,
                      n.event = fit$n.event,

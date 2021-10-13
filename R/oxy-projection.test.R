@@ -1,32 +1,51 @@
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param dat PARAM_DESCRIPTION
-#' @param Wlist PARAM_DESCRIPTION
-#' @param base PARAM_DESCRIPTION
-#' @param alpha PARAM_DESCRIPTION, Default: 0.05
-#' @param side PARAM_DESCRIPTION, Default: c("two.sided")
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @title Projection test
+#' @description Perform projection test as proposed by Brendel (2014)
+#' @param dat a dataframe or matrix, of which the first three columns are survival
+#' time, event status indicator  and group label. The status indicator, normally
+#' 0=alive, 1=dead/event. Other choices are TRUE/FALSE (TRUE=death) or 1/2 (2=death).
+#' The group label can be either numeric values like 0=control, 1=treatment or text
+#' like C=control, T=treatment.
+#' @param Wlist a list object with components of weight functions
+#' @param base a text must be one of c("\code{KM}","\code{Combined}","\code{N}"), Default: c("KM")
+#' @param alpha a number indicating type I error rate, Default: 0.05
+#' @return
+#' \item{chisq}{chi-square statistic}
+#' \item{df.chis}{degree freedom of the test}
+#' \item{pvalue}{p-value of the test }
+#' \item{details}{a data frame consisting of statistics from multiple
+#' weight functions and the variance-covariance matrix}
+#' @details
+#' The base functions are the same as those described in function
+#' \code{MaxLRtest}.
+#' @references
+#' Brendel, M., Janssen, A., Mayer, C. D., & Pauly, M. (2014). Weighted logrank
+#' permutation tests for randomly right censored life science
+#' data. Scandinavian Journal of Statistics, 41(3), 742-761.
+#' @examples
 #' \dontrun{
 #' if(interactive()){
-#'  #EXAMPLE1
+#' lung <- maxLRT::lung
+#' tmpd <- with(lung, data.frame(time=SurvTime,stat=1-censor,grp=Treatment))
+#' timef1 <- function(x){1}
+#' timef2 <- function(x){(x)}
+#' test1 <- projection.test(tmpd,list(timef1,timef2),base="KM")
+#' test1$chisq; test1$pvalue;test1$df.chisq
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[survival]{survfit}}
+#'  \code{\link[stats]{stepfun}},\code{\link[stats]{Chisquare}}
 #'  \code{\link[MASS]{ginv}}
-#'  \code{\link[stats]{Chisquare}}
 #' @rdname projection.test
-#' @export 
+#' @export
 #' @importFrom survival survfit
+#' @importFrom stats stepfun qchisq pchisq
 #' @importFrom MASS ginv
-#' @importFrom stats qchisq pchisq
 projection.test <- function(dat
-                        ,Wlist
-                        ,base
-                        ,alpha=0.05
-                        ,side=c("two.sided")
+                            ,Wlist
+                            ,base
+                            ,alpha=0.05
+                            ,side=c("two.sided")
 ){
 
   ## transform the input data to the matrix ready for analysis
@@ -43,7 +62,7 @@ projection.test <- function(dat
   }else if (base=="KM"){
     # based on the pooled survival
     s_fit<- survival::survfit(Surv(dat[,1], dat[,2])~1 , data = dat)
-    f_s <- stepfun(s_fit$time,y=c(0,1-s_fit$surv),right = TRUE)
+    f_s <- stats::stepfun(s_fit$time,y=c(0,1-s_fit$surv),right = TRUE)
     tnew <- f_s(datM$time)
   }else if (base=="N"){
     # based on time/person at risk
@@ -70,11 +89,11 @@ projection.test <- function(dat
   pvalue <- stats::pchisq(statistic,qr(Vmat)$rank,lower.tail = FALSE)
 
   list <-list(
-              chisq=statistic,
-			  df.chisq=qr(Vmat)$rank,
-              pvalue=pvalue,
-			  details=cbind(Zstat,Vmat)
-             )
+    chisq=statistic,
+    df.chisq=qr(Vmat)$rank,
+    pvalue=pvalue,
+    details=cbind(Zstat,Vmat)
+  )
   return(list)
 
 }

@@ -2,39 +2,56 @@
 % Please edit documentation in R/oxy-projection.test.R
 \name{projection.test}
 \alias{projection.test}
-\title{FUNCTION_TITLE}
+\title{Projection test}
 \usage{
-projection.test(dat, Wlist, base, alpha = 0.05, side = c("two.sided"))
+projection.test(dat, Wlist, base, alpha = 0.05)
 }
 \arguments{
-\item{dat}{PARAM_DESCRIPTION}
+\item{dat}{a dataframe or matrix, of which the first three columns are survival
+time, event status indicator  and group label. The status indicator, normally
+0=alive, 1=dead/event. Other choices are TRUE/FALSE (TRUE=death) or 1/2 (2=death).
+The group label can be either numeric values like 0=control, 1=treatment or text
+like C=control, T=treatment.}
 
-\item{Wlist}{PARAM_DESCRIPTION}
+\item{Wlist}{a list object with components of weight functions}
 
-\item{base}{PARAM_DESCRIPTION}
+\item{base}{a text must be one of c("\code{KM}","\code{Combined}","\code{N}"), Default: c("KM")}
 
-\item{alpha}{PARAM_DESCRIPTION, Default: 0.05}
-
-\item{side}{PARAM_DESCRIPTION, Default: c("two.sided")}
+\item{alpha}{a number indicating type I error rate, Default: 0.05}
 }
 \value{
-OUTPUT_DESCRIPTION
+\item{chisq}{chi-square statistic}
+\item{df.chis}{degree freedom of the test}
+\item{pvalue}{p-value of the test }
+\item{details}{a data frame consisting of statistics from multiple
+weight functions and the variance-covariance matrix}
 }
 \description{
-FUNCTION_DESCRIPTION
+Perform projection test as proposed by Brendel (2014)
 }
 \details{
-DETAILS
+The base functions are the same as those described in function
+\code{MaxLRtest}.
 }
 \examples{
 \dontrun{
 if(interactive()){
- #EXAMPLE1
+lung <- maxLRT::lung
+tmpd <- with(lung, data.frame(time=SurvTime,stat=1-censor,grp=Treatment))
+timef1 <- function(x){1}
+timef2 <- function(x){(x)}
+test1 <- projection.test(tmpd,list(timef1,timef2),base="KM")
+test1$chisq; test1$pvalue;test1$df.chisq
  }
 }
 }
+\references{
+Brendel, M., Janssen, A., Mayer, C. D., & Pauly, M. (2014). Weighted logrank
+permutation tests for randomly right censored life science
+data. Scandinavian Journal of Statistics, 41(3), 742-761.
+}
 \seealso{
 \code{\link[survival]{survfit}}
+\code{\link[stats]{stepfun}},\code{\link[stats]{Chisquare}}
 \code{\link[MASS]{ginv}}
-\code{\link[stats]{Chisquare}}
 }

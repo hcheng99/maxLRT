@@ -2,28 +2,19 @@
 % Please edit documentation in R/oxy-load.mat.R
 \name{load.mat}
 \alias{load.mat}
-\title{FUNCTION_TITLE}
+\title{Load data matrix for \code{MaxLRtest}}
 \usage{
 load.mat(dat)
 }
 \arguments{
-\item{dat}{PARAM_DESCRIPTION}
+\item{dat}{input data set for \code{MaxLRtest} and \code{projection.test}}
 }
 \value{
-OUTPUT_DESCRIPTION
+the intermediate data set
 }
 \description{
-FUNCTION_DESCRIPTION
-}
-\details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+prepare the intermediate dataset for \code{MaxLRtest} and
+\code{projection.test}
 }
 \seealso{
 \code{\link[survival]{survfit}}

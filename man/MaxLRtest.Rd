@@ -2,45 +2,103 @@
 % Please edit documentation in R/oxy-MaxLRtest.R
 \name{MaxLRtest}
 \alias{MaxLRtest}
-\title{FUNCTION_TITLE}
+\title{Maximum Weighted Logrank Test}
 \usage{
 MaxLRtest(
   dat,
   Wlist,
-  base = c("Combined", "KM", "N"),
+  base = c("KM"),
   alpha = 0.05,
-  side = c("two.sided")
+  alternative = c("two.sided")
 )
 }
 \arguments{
-\item{dat}{PARAM_DESCRIPTION}
+\item{dat}{a dataframe or matrix, of which the first three columns are survival
+time, event status indicator  and group label. The status indicator, normally
+0=alive, 1=dead/event. Other choices are TRUE/FALSE (TRUE=death) or 1/2 (2=death).
+The group label can be either numeric values like 0=control, 1=treatment or text
+like C=control, T=treatment.}
 
-\item{Wlist}{PARAM_DESCRIPTION}
+\item{Wlist}{a list object with components of weight functions}
 
-\item{base}{PARAM_DESCRIPTION, Default: c("Combined", "KM", "N")}
+\item{base}{a text must be one of c("\code{KM}","\code{Combined}","\code{N}"), Default: c("KM")}
 
-\item{alpha}{PARAM_DESCRIPTION, Default: 0.05}
+\item{alpha}{a number indicating type I error rate, Default: 0.05}
 
-\item{side}{PARAM_DESCRIPTION, Default: c("two.sided")}
+\item{alternative}{a text must be one of c("\code{two.sided}","\code{less}",
+\code{"greater"}), indicating the alternative hypothesis, Default: c("two.sided")}
 }
 \value{
-OUTPUT_DESCRIPTION
+a list of components including
+\item{stat}{a value giving statistic. It is logrank or weighted logrank test
+statistic if one weight function is specified. Otherwise, it gives
+the maximum weighted logrank test statistic, which takes the maximum
+of absolute values of all the statistics. }
+\item{stat.mat}{a matrix with the first column showing the weighted
+logrank test statistic and other columns displaying the variance and
+covariance between statistics}
+\item{critV}{a value indicating the critical value corresponding to the nomial
+level}
+\item{details}{a dataframe showing the intermediate variables used in the
+calculation. }
+\item{p.value}{a value indicating the p-value of the test}
 }
 \description{
-FUNCTION_DESCRIPTION
+\code{MaxLRtest} performs the maximum weighted logrank test if
+multiple weight functions are provided. If single weight function is specified,
+it is the regular weighted logrank test.
 }
 \details{
-DETAILS
+\code{MaxLRtest} function performs logrank, weighted logrank test such as
+Flemming-Harrigton test and maximum weighted logrank test depending on
+the type and number of weight functions. Let \eqn{w(x_t)} denote the weight applied
+at event time point \eqn{t}, where \eqn{x_t} is the base function. There are three options
+for \code{base}. If \code{KM} is used, \eqn{x_t=1-S_t}, where \eqn{S_t}
+is pooled Kaplan-Meier estimate of survival rate at time point t. A FH(1,0) test
+needs a weight function \eqn{1-x_t}. If \code{Combined} base is selected,
+\eqn{x_t=1-S^*_t}, where \eqn{S^*_t=w_1S^1_t+w_0S^0_t}, the weighted average
+of KM estimate of survival rate for treatment (\eqn{S^1_t}) and control group
+(\eqn{S^0_t}). It is considered more robust in case of unbalanced data.
+For option \code{N}, \eqn{x_t=1-\frac{Y_t}{N}}, where \eqn{Y_t} is the subjects
+at risk at time t and \eqn{N} is the total number of subjects.The Wilcoxon and
+tarone test should use this base. The base \eqn{x_t} in all three cases is an
+increasing function of time t. Function \code{gen.wgt} helps to generate the commonly
+used weight functions.
+
+A p-value is obtained from a multivariate normal distribution if multiple weights
+are provided. The function \code{pmvnorm} from R package \pkg{mvtnorm} is used.
+Because the algorithm is slightly seed-dependent,the p-value and critical value
+is the average of 10 runs.
 }
 \examples{
 \dontrun{
-if(interactive()){
- #EXAMPLE1
- }
+data(lung)
+tmpd <- with(lung, data.frame(time=SurvTime,stat=1-censor,grp=Treatment))
+timef1 <- function(x){1}
+timef2 <- function(x){(x)}
+timef3 <- function(x){1-x}
+timef5 <- function(x,pp=1/2){(x<=pp)*(-1/pp*x+1)+(x>pp)*(-1/(1-pp)*(x-pp))}
+W_4e <- list(timef1,timef2,timef3,timef5)
+#logrank test
+t1 <- MaxLRtest(tmpd
+                       ,Wlist=list(timef1)
+                       ,base=c("KM")
+                       ,alpha=0.05
+                       ,alternative=c("two.sided")
+)
+t1$stat ;t1$p.value
+# maximum weighted logrank test
+t2 <- MaxLRtest(tmpd
+                       ,Wlist=W_4e
+                       ,base=c("KM")
+                       ,alpha=0.05
+                       ,alternative=c("two.sided")
+)
+t2$stat ;t2$p.value
+#visualize the weight functions
+plot(t2)
 }
 }
 \seealso{
-\code{\link[survival]{survfit}}
-\code{\link[stats]{stepfun}},\code{\link[stats]{cor}}
 \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
 }

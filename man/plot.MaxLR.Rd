@@ -2,23 +2,20 @@
 % Please edit documentation in R/oxy-MaxLRtest.R
 \name{plot.MaxLR}
 \alias{plot.MaxLR}
-\title{FUNCTION_TITLE}
+\title{Graphical Display of Weight Functions}
 \usage{
 \method{plot}{MaxLR}(x, ...)
 }
 \arguments{
-\item{x}{PARAM_DESCRIPTION}
+\item{x}{object of \code{MaxLRtest} function}
 
-\item{...}{PARAM_DESCRIPTION}
+\item{...}{additional graphical arguments passed to the plot function}
 }
 \value{
-OUTPUT_DESCRIPTION
+plots are produced on the current graphics device
 }
 \description{
-FUNCTION_DESCRIPTION
-}
-\details{
-DETAILS
+Display weight functions used in the function \code{MaxLRtest}
 }
 \examples{
 \dontrun{
@@ -26,7 +23,4 @@ if(interactive()){
  #EXAMPLE1
  }
 }
-}
-\seealso{
-\code{\link[graphics]{points}},\code{\link[graphics]{legend}},\code{\link[graphics]{mtext}}
 }

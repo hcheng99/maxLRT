@@ -153,8 +153,3 @@ simu.trial <- function(type=c("event","time")
   class(list) <- 'SimuTrial'
   return(list)
 }
-
-# plot.SimuTrial <- function(x,...){
-#   fitdat <- x$data
-#
-# }

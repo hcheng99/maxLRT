@@ -1,31 +1,126 @@
 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param type PARAM_DESCRIPTION, Default: c("event", "time")
-#' @param trial_param PARAM_DESCRIPTION
-#' @param bsl_dist PARAM_DESCRIPTION, Default: c("weibull", "loglogistic")
-#' @param bsl_param PARAM_DESCRIPTION
-#' @param drop_param0 PARAM_DESCRIPTION
-#' @param drop_param1 PARAM_DESCRIPTION, Default: drop_param0
-#' @param entry_pdf0 PARAM_DESCRIPTION
-#' @param entry_pdf1 PARAM_DESCRIPTION, Default: entry_pdf0
-#' @param HR_fun PARAM_DESCRIPTION
-#' @param ratio PARAM_DESCRIPTION
-#' @param upInt PARAM_DESCRIPTION, Default: 100
-#' @param print PARAM_DESCRIPTION, Default: TRUE
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
+#' @title Simulate Survival Trial Data
+#' @description \code{simu.trial} simulates survival data allowing flexible input
+#' of design parameters. It supports both event-driven design and fixed study duration
+#' design.
+#' @param type indicates whether event-driven trial ("\code{event}) or fixed study duration
+#' trial ("\code{time}"), Option: c("\code{event}", "\code{time}")
+#' @param trial_param a vector of length 3 with components for required subject size, enrollment
+#' time and required number of events ("\code{event}" type trial)/follow-up time
+#' ("\code{time}" type trial)
+#' @param bsl_dist indicates the survival distribution for control group, option:
+#'  c("\code{weibull}", "\code{loglogistic}")
+#' @param bsl_param a vector of length 2 with the shape and rate (scale) parameter for the
+#'  survival distribution of control group. See details.
+#' @param drop_param0 a vector of length 2 with shape and scale parameter for the
+#' weibull distribution of drop-out time for control group
+#' @param drop_param1 a vector of length 2 with shape and scale parameter for the
+#' weibull distribution of drop-out time for treatment group
+#' @param entry_pdf0 a function describing the pdf of the entry time for control. Default: uniform enrollment
+#' @param entry_pdf1 a function describing the pdf of the entry time for treatment.
+#' @param HR_fun a function describing the hazard ratio function between treatment
+#' and control group
+#' @param ratio allocation ratio between treatment and control group.
+#' For example, \code{allocation_ratio}=2 if 2:1 allocation is used.
+#' @param upInt a value indicating the upper bound usedin the uniroot function.
+#' See details.  Default: 100
+#' @param print a logical indicating whether basic information summary is printed
+#' to the console or not, Default: TRUE
+#' @return
+#' A list containing the following components
+#'
+#' \code{data}: a data frame (simulated dataset) with columns:
+#' \describe{
+#' \item{id}{identifier number from 1:n, n is the total sample size}
+#' \item{group}{group variable with 1 indicating treatment and 0 indicating control}
+#' \item{aval}{observed survival time, the earliest time among event time,
+#' drop-out time and end of study time}
+#' \item{cnsr}{censoring indicator with 1 indicating censor and 0 indicating event}
+#' \item{cnsr.desc}{description of the \code{cnsr} status, including three options-
+#' drop-out, event and end of study. Both drop-out and end of study are considered as
+#' censor.}
+#' \item{event}{event indicator with 1 indicating event and 0 indicating censor}
+#' \item{entry.time}{time when the patient is enrolled in the study}
+#'}
+#'
+#' summary information of the trial including
+#'
+#' \describe{
+#' \item{\code{type}}{a character indicating input design type - \code{event} or \code{time}}
+#' \item{\code{entrytime}}{{a number indicating input enrollment period}}
+#' \item{\code{maxob}}{a number indicating the maximum study duration. For \code{time}
+#' type of design, the value is equal to the enrollment period plus the follow-up
+#' period. For \code{event} type of design, the value is the calendar time of the
+#' last event.}
+#' }
+
+#' @details
+#'
+#' The loglogistic distribution for the event time has the
+#' survival function \eqn{S(x)=b^a/(b^a+x^a)} and hazard function
+#' \eqn{\lambda(x)=a/b(x/b)^(a-1)/(1+(t/b)^a)},, where \eqn{a} is the shape parameter
+#' and \eqn{b} is the scale parameter. The weibull distribution for event time and drop-out time has the survival function \eqn{f(x)=exp(-(xb)^a)}
+#' and hazard function \eqn{\lambda(x)=ab(xb)^a-1}, where \eqn{a} is the shape parameter
+#' and \eqn{b} is the rate parameter. The median of weibull
+#' distribution is \eqn{(ln(2)^(1/a)/b)}. If drop out or loss to follow-up are
+#' do not need to be considered, a very small rate parameter \eqn{b} can be chosen
+#' such that the median time is greatly larger than the study duration. The default
+#' entry time is uniformly distributed within the enrollment period by default.
+#' Other options are allowed through providing the density function.
+#'
+#' The \code{simu.trial} function simulates survival times for control and
+#' treatment groups separately. The control survival times are drawn from standard parametric
+#' distribution (Weibull, Loglogistic). Let \eqn{\lambda_1(t)} and \eqn{\lambda_0(t)}
+#' denote the hazard function for treatment and control. It is assumed that
+#' \eqn{\lambda_1(t)/\lambda_0(t)=g(t)}, where \eqn{g(t)} is the user-defined
+#' function, describing the change of hazard ratio over time. In case of proportional
+#' hazards, \eqn{g(t)} is a constant. The survival function for treatment group
+#' is \eqn{S_1(t)=exp(-\int_0^t g(s)\lambda_0(s)ds)}. The Survival time T is
+#' given by \eqn{T=S_1^(-1)(U)}, where U is drawn from uniform (0,1). More details
+#' can be found in Bender, et al. (2005).
+#' @references
+#' Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional
+#' hazards models. Statistics in medicine, 24(11), 1713-1723.
 #' @examples
 #' \dontrun{
 #' if(interactive()){
-#'  #EXAMPLE1
+#' library("maxLRT")
+#' # total sample size
+#' N <- 300
+#' # target event
+#' E <- 100
+#' # allocation ratio
+#' RR <- 2
+#' # enrollment time
+#' entry <- 12
+#' # follow-up time
+#' fup <- 18
+#' # shape and scale parameter of weibull for entry time
+#' b_weibull <- c(1,log(2)/18)
+#' # shape and scale parameter of weibull for drop-out time
+#' drop_weibull <- c(1,log(2)/30)
+#' # hazard ratio function (constant)
+#' HRf <- function(x){0.8*x^0}
+#'
+#' ### event-driven trial
+#' set.seed(123445)
+#' data1 <- simu.trial(type="event",trial_param=c(N,entry,E),bsl_dist="weibull",
+#'                     bsl_param=b_weibull,drop_param0=drop_weibull,HR_fun=HRf,
+#'                     ratio=RR)
+#'
+#' ### fixed study duration
+#' set.seed(123445)
+#' data2 <- simu.trial(type="time",trial_param=c(N,entry,fup),bsl_dist="weibull",
+#'                     bsl_param=b_weibull,drop_param0=drop_weibull,HR_fun=HRf,
+#'                     ratio=RR)
 #'  }
 #' }
 #' @seealso
-#'  \code{\link[stats]{Weibull}},\code{\link[stats]{integrate}},\code{\link[stats]{Logistic}},\code{\link[stats]{uniroot}},\code{\link[stats]{Uniform}}
+#'  \code{\link[stats]{Weibull}},\code{\link[stats]{Logistic}}
 #' @rdname simu.trial
 #' @export
 #' @importFrom stats rweibull integrate rlogis uniroot runif
+
 simu.trial <- function(type=c("event","time")
                        ,trial_param # include the total sample size,entry time,
                        # target event (event type)/fup time (time )
@@ -76,7 +171,7 @@ simu.trial <- function(type=c("event","time")
     Hf <- function(t){exp(-1* a/b*integrate( function(x){(x/b)^{a-1}/(1+(x/b)^a)*HR_fun(x)},0,t)$value)}
   }
   gen_t <- function(y){stats::uniroot(function(x){Hf(x)-y},interval = c(0,upInt),extendInt="yes")$root}
- # set.seed(seed*10)
+  # set.seed(seed*10)
   U1 <- stats::runif(n1)
   T_1 <-as.vector(unlist(lapply(U1, gen_t)))
   Tm<-c(T_0,T_1)
@@ -112,10 +207,10 @@ simu.trial <- function(type=c("event","time")
   #- create the CDF;
   ent_cdf0 <- function(t){stats::integrate(entry_pdf0,lower=0,upper=t)$value}
   gen_ent0 <- function(y){stats::uniroot(function(x){ent_cdf0(x)-y},
-                                  interval = c(0,upInt),extendInt="yes")$root}
+                                         interval = c(0,upInt),extendInt="yes")$root}
   ent_cdf1 <- function(t){stats::integrate(entry_pdf1,lower=0,upper=t)$value}
   gen_ent1 <- function(y){stats::uniroot(function(x){ent_cdf1(x)-y},
-                                  interval = c(0,upInt),extendInt="yes")$root}
+                                         interval = c(0,upInt),extendInt="yes")$root}
 
   #set.seed(seed+1)
   tu0_0 <- runif(n0)
@@ -138,7 +233,7 @@ simu.trial <- function(type=c("event","time")
                                for event, entry and drop-out parameters")}
 
     Dur <- min(dat[dat$c0==t_p3,]$ot )
-    }else{
+  }else{
     Dur <- t_p2+t_p3 # the length of study
   }
   min_ind <- apply(cbind(dat$ot,Dur,dat$ot_drop),1,which.min)
@@ -181,7 +276,3 @@ simu.trial <- function(type=c("event","time")
   return(list)
 }
 
-# plot.SimuTrial <- function(x,...){
-#   fitdat <- x$data
-#
-# }

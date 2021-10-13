@@ -1,36 +1,43 @@
-
-
 ###input parameters
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param entry PARAM_DESCRIPTION, Default: 1
-#' @param fup PARAM_DESCRIPTION, Default: 1
-#' @param CtrlHaz PARAM_DESCRIPTION
-#' @param hazR PARAM_DESCRIPTION
-#' @param transP1 PARAM_DESCRIPTION
-#' @param transP0 PARAM_DESCRIPTION
-#' @param Wlist PARAM_DESCRIPTION
-#' @param eventN PARAM_DESCRIPTION
-#' @param totalN PARAM_DESCRIPTION
-#' @param ratio PARAM_DESCRIPTION, Default: 1
-#' @param alpha PARAM_DESCRIPTION, Default: 0.05
-#' @param alternative PARAM_DESCRIPTION, Default: c("two.sided", "less", "greater")
-#' @param k PARAM_DESCRIPTION, Default: 100
+#' @title Power Calculation with Maximum Weighted Logrank Test
+#' @description  \code{n2pwr.maxLR} calcualtes the power given either the
+#' number of events or number of subjects
+#' @param entry a numeric value indicating the enrollment time, Default: 1
+#' @param fup a numeric value indicating the minimum follow-up time for subjects.
+#'  , Default: 1
+#' @param CtrlHaz a function,  specifying the hazard function for control group.
+#' @param hazR a function, specifying the hazard ratio function between
+#' treatment and control group
+#' @param transP1 a numeric vector of length 2, consisting of the transition
+#' probability from
+#' receiving treatment to drop-out (drop-out rate) and
+#' from receiving treatment to receiving control (drop-in rate) per time unit.
+#' @param transP0 a numeric vector of length 2, consisting of the transition
+#' probability from
+#' receiving control to drop-out (drop-out rate) and
+#' from receiving control to receiving treatment (drop-in rate) per time unit.
+#' @param Wlist a list, consisting of weight functions applied to the test.
+#' The element of the list must be functions. Default is a list of one constant
+#' function, corresponding to the logrank test.
+#' @param eventN the number of events
+#' @param totalN the number of subjects
+#' @param ratio allocation ratoi, Default: 1
+#' @param alpha type i error, Default: 0.05
+#' @param alternative alternative hypothesis, Default: c("two.sided", "less", "greater")
+#' @param k an integer, indicating number of sub-intervals per time unit, Default: 100
 #' @param nocensor PARAM_DESCRIPTION, Default: FALSE
 #' @param criteria PARAM_DESCRIPTION, Default: 100
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @examples
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[stats]{weighted.mean}},\code{\link[stats]{cor}}
 #'  \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
 #' @rdname n2pwr.maxLR
-#' @export 
+#' @export
 #' @importFrom stats weighted.mean cov2cor
 #' @importFrom mvtnorm qmvnorm pmvnorm
 n2pwr.maxLR<- function(entry   = 1

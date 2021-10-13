@@ -1,38 +1,93 @@
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param method PARAM_DESCRIPTION, Default: c("schoenfeld", "freedman")
-#' @param lambda0 PARAM_DESCRIPTION
-#' @param lambda1 PARAM_DESCRIPTION
-#' @param ratio PARAM_DESCRIPTION
-#' @param entry PARAM_DESCRIPTION, Default: 0
-#' @param fup PARAM_DESCRIPTION
-#' @param alpha PARAM_DESCRIPTION, Default: 0.05
-#' @param beta PARAM_DESCRIPTION, Default: 0.1
-#' @param two.side PARAM_DESCRIPTION, Default: TRUE
-#' @param Lparam PARAM_DESCRIPTION, Default: NULL
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @title Sample Size Calculation under Proportional Hazards
+#' @description \code{pwr2n.LR} calculates the total number of events and total
+#' number of subjects required given the provided design parameters based on either
+#' schoenfeld or freedman formula.
+#' @param method calculation formula, Default: c("schoenfeld", "freedman")
+#' @param lambda0 hazard rate for the control group
+#' @param lambda1 hazard rate for the treatment group
+#' @param ratio randomization ratio between treatment and control. For example,
+#'  ratio=2 if randomization ratio is 2:1 to treatment and control group.
+#' @param entry enrollment time. A constant enrollment rate is assumed,
+#'  Default: 0
+#' @param fup follow-up time.
+#' @param alpha type I error rate, Default: 0.05
+#' @param beta type II error rate. For example,if the target power is 80%, beta is 0.2.
+#'  Default: 0.1
+#' @param two.side a logical scalar; if TRUE then a two-sided test is used.If
+#'  FALSE, a one-sided test is used. Default: TRUE
+#' @param Lparam a vector of parameters for the drop-out Weibull distribution,
+#'  See Details below. Default: NULL
+#' @return
+#'  \item{eventN}{The total number of events}
+#' \item{totalN}{The total number of subjects}
+#' @details The total event number is determined only by \eqn{\alpha, \beta} and
+#'  hazard ratio, i.e., \eqn{\lambda_1/\lambda_0}. Other design parameters such as
+#'  enrollment period affects the event probability and thus the total sample size.
+#'  A fixed duration design is assumed in the calculation. ALl patients are enrolled
+#'  at a constant rate within \code{entry} time and have at least \code{fup}
+#'  time of follow-up. So the total study duration is \code{entry}+\code{fup}.
+#'  If drop-out is expected, a Weibull distribution with shape parameter -\eqn{\alpha}
+#'  and scale parameter - \eqn{\beta} is considered. The CDF is
+#'  \eqn{F(x)=1-exp(-(x/\beta)^\alpha)}.
+#' @author   Huan Cheng (hcheng1118@@hotmail.com)
+#' @references
+#' Schoenfeld, D. (1981) The asymptotic properties of nonparametric
+#'  tests for comparing survival distributions. Biometrika, 68,
+#' 316–319.
+#'
+#' Freedman, L. S. (1982) Tables of the number of patients required
+#' in clinical trials using the logrank test. Statistics in medicine, 1, 121–129.
+
+#' @examples
+#'l0 <- log(2)/14; HR <- 0.8; RR <- 2; entry <- 12; fup <- 12;
+#' eg1 <- pwr2n.LR( method    = c("schoenfeld")
+#'                  ,l0
+#'                  ,l0*HR
+#'                  ,ratio=RR
+#'                  ,entry
+#'                  ,fup
+#'                  ,alpha     = 0.05
+#'                  ,beta      = 0.1
+#'                  ,two.side  = TRUE
+#' )
+#' # event number, total subjects, event probability
+#' c(eg1$eventN,eg1$totalN,eg1$eventN/eg1$totalN)
+#'
+#' # example 2: drop-out from an exponential with median time is 30
+#' eg2 <- pwr2n.LR( method    = c("schoenfeld")
+#'                  ,l0
+#'                  ,l0*HR
+#'                  ,ratio=RR
+#'                  ,entry
+#'                  ,fup
+#'                  ,alpha     = 0.05
+#'                  ,beta      = 0.1
+#'                  ,two.side  = TRUE
+#'                  ,Lparam = c(1,30/log(2))
+#' )
+#' # event number, total subjects, event probability
+#' c(eg2$eventN,eg2$totalN,eg2$eventN/eg2$totalN)
+#'
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
 #'  }
 #' }
-#' @seealso 
+#' @seealso
 #'  \code{\link[stats]{integrate}},\code{\link[stats]{weighted.mean}},\code{\link[stats]{Normal}}
 #' @rdname pwr2n.LR
-#' @export 
+#' @export
 #' @importFrom stats integrate weighted.mean qnorm
 pwr2n.LR <- function( method    = c("schoenfeld","freedman")
-                          ,lambda0
-                          ,lambda1
-                          ,ratio
-                          ,entry    =0
-                          ,fup
-                          ,alpha     = 0.05
-                          ,beta      = 0.1
-                          ,two.side  = TRUE
-                          ,Lparam=NULL
+                      ,lambda0
+                      ,lambda1
+                      ,ratio
+                      ,entry    =0
+                      ,fup
+                      ,alpha     = 0.05
+                      ,beta      = 0.1
+                      ,two.side  = TRUE
+                      ,Lparam=NULL
 )
   # the calculation assumes the exponential distribution for control and
   # treatment group
@@ -56,7 +111,7 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
 
       return(e1)
     }
-    }
+  }
   HR <- lambda1/lambda0
   if (entry==0){
     if (is.null(Lparam)){
@@ -86,7 +141,8 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
   }
   ## calculate the event rate
   erate <- stats::weighted.mean(c(e0,e1),
-                         w=c(1/(1+ratio),ratio/(1+ratio)))
+                                w=c(1/(1+ratio),ratio/(1+ratio)))
+  print(erate)
   ## calculate the number of events
   numerator=(stats::qnorm(1-alpha/2)+stats::qnorm(1-beta))^2
 
@@ -104,25 +160,30 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
   return(list(eventN=Dnum,totalN=N))
 }
 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param ratio PARAM_DESCRIPTION
-#' @param lambda1 PARAM_DESCRIPTION
-#' @param lambda0 PARAM_DESCRIPTION
-#' @param entry PARAM_DESCRIPTION
-#' @param fup PARAM_DESCRIPTION
-#' @param l_shape PARAM_DESCRIPTION
-#' @param l_scale PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @title Event Rate Calculation
+#' @description Calculate the event rate given the hazards and drop-out
+#' distribution paramterrs
+#' @param ratio allocation ratio
+#' @param lambda1 hazard rate for treatment group
+#' @param lambda0 hazard rate for control group
+#' @param entry enrollment period time
+#' @param fup follow-up period time
+#' @param l_shape shape parameter of weibull distribution for drop-out
+#' @param l_scale scale parameter of weibull distribution for drop-out
+#' @return
+#' the event rate at the end of study
+#' @details
+#' The event rate is calculated based on the following assumptions: 1)
+#' patients are uniformly enrolled within \code{entry} time; 2) survival
+#' times for treatment and control are from exponential distribution; 3)
+#' the drop-out times for treatment and control follow the weibull distribution.
+#' The final rate is obtained via numeric integration.
+#' @examples
 #' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
+#' cal_event(1,0.1,0.2,5,5,0.5,30)
 #' }
 #' @rdname cal_event
-#' @export 
+#' @export
 cal_event <- function(
   ratio
   ,lambda1
