@@ -13,48 +13,121 @@ knitr::opts_chunk$set(
 )
 ```
 
-# maxLRT
+# package: maxLRT
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of maxLRT is to ...
+Package: maxLRT provides functions to perform combination test including maximum weighted logrank test (MWLR) and projection test, to calculate sample size with MWLR in a simulation-free approach allowing for staggered entry, drop-out etc, to visualize
+the design parameters and to simulate survival data with flexible 
+design input. 
+
 
 ## Installation
 
 You can install the released version of maxLRT from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-install.packages("maxLRT")
+#install.packages("maxLRT")
 ```
 
 And the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("hcheng99/maxLRT")
+#devtools::install_github("hcheng99/maxLRT")
 ```
-## Example
+## Example 1 - perform maximum weighted logrank test 
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows you how to perform  maximum weighted logrank test. 
 
 ```{r example}
 library(maxLRT)
-## basic example code
+
+## load data from the package and only keep variables used.
+tmpd <- with(maxLRT::lung, data.frame(time=SurvTime,stat=1-censor,grp=Treatment))
+
+# plot the KM curve
+library(survminer)
+library(survival)
+fit <- survfit(Surv(time,stat)~grp,data=tmpd)
+ggsurvplot(fit,data=tmpd, pval = TRUE)
+## Maxcombo test 
+#### generate the weight functions 
+wt1 <- gen.wgt(method="Maxcombo")
+
+t1 <- MaxLRtest(tmpd
+                        ,Wlist=wt1
+                        ,base=c("KM")
+                        ,alpha=0.05
+                        ,alternative=c("two.sided")
+)
+t1$stat ;t1$p.value
+### test proposed by Cheng and He (2021)
+#### generate the weight functions 
+wt2 <- gen.wgt(method="Maxcross",theta=0.5)
+t2 <- MaxLRtest(tmpd
+                        ,Wlist=wt2
+                        ,base=c("KM")
+                        ,alpha=0.05
+                        ,alternative=c("two.sided")
+)
+t2$stat ;t2$p.value
+
+#### plot the weight functions
+plot(t2)
+
+```
+In the above example, the two survival curves cross over. Cheng's method has the smallest p-value among logrank and Maxcombo test, showing the power advantage in detecting crossing hazards.
+
+
+## Example 2 sample size calculation 
+### case 1: exponential control group with proportional hazards 
+#### uniform enrollment 
+The parameters are taken from an example from paper - Lu (2021)
+```{r samplecal1}
+t_enrl <- 5
+t_fup <- 5
+lmd0 <- -log(0.2)/10
+f_hr <- function(x){0.5*x^0}
+ss <- 1
+ratio <-1 
+alpha <- 0.05
+beta <- 0.1
+timef1 <- gen.wgt(method="LR")
+########with uniform enrollment
+ef <- function(x){(1/t_enrl)*(x>0&x<=t_enrl)}
+
+#########Lakatos Method############### 
+size1 <- pwr2n.maxLR(entry     = t_enrl
+            ,fup      = t_fup
+            ,k        = 100
+            ,ratio    = ratio
+            ,Wlist  = timef1
+            ,CtrlHaz=function(x){lmd0*x^0}
+            ,transP1=c(0,0)
+            ,transP0=c(0,0)
+            ,hazR     = f_hr
+            ,alpha    = alpha
+            ,beta     = beta
+            ,entry_pdf0=ef
+            ,entry_pdf1 =ef
+)
+c(size1$totalN,size1$eventN)
+target_N <- round(size1$totalN,digits=0)
+target_E <- round(size1$eventN,digits=0)
+c(target_E,target_N)
+#########schoenfeld's formula############### 
+# a very large scale parameter for drop-out achieves the effect 
+# that no one will drop out.
+size1_s <- pwr2n.LR(method = "schoenfeld",lambda0 = lmd0, lambda1 = lmd0*0.5, ratio = ratio, entry = t_fup, fup = t_fup, alpha = alpha, beta  = beta, Lparam = c(1,100000))
+
+c(size1_s$eventN, size1_s$totalN)
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
 
-```{r cars}
-summary(cars)
-```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>.
+### References
+Cheng,H.and He,J.(2021)A maximum weighted logrank test in detecting crossing hazards.
 
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+Lu, K. (2021). Sample size calculation for logrank test and prediction of number of events over time. Pharmaceutical Statistics, 20(2), 229-244.
