@@ -57,7 +57,7 @@ ggsurvplot(fit,data=tmpd, pval = TRUE)
 <img src="man/figures/README-example-1.png" width="100%" />
 
 ``` r
-## Maxcombo test 
+################ Maxcombo test ###################
 #### generate the weight functions 
 wt1 <- gen.wgt(method="Maxcombo")
 
@@ -69,8 +69,8 @@ t1 <- MaxLRtest(tmpd
 )
 t1$stat ;t1$p.value
 #> [1] 0.933386
-#> [1] 0.5879237
-### test proposed by Cheng and He (2021)
+#> [1] 0.587945
+############# test proposed by Cheng and He (2021)############
 #### generate the weight functions 
 wt2 <- gen.wgt(method="Maxcross",theta=0.5)
 t2 <- MaxLRtest(tmpd
@@ -81,7 +81,7 @@ t2 <- MaxLRtest(tmpd
 )
 t2$stat ;t2$p.value
 #> [1] 1.870191
-#> [1] 0.1527565
+#> [1] 0.1527593
 
 #### plot the weight functions
 plot(t2)
@@ -98,7 +98,8 @@ advantage in detecting crossing hazards.
 
 #### uniform enrollment
 
-The parameters are taken from an example from paper - Lu (2021)
+Three commonly used methods based on logrank test under proportional
+hazards The parameters are taken from an example from paper - Lu (2021)
 
 ``` r
 t_enrl <- 5
@@ -137,10 +138,88 @@ c(target_E,target_N)
 #########schoenfeld's formula############### 
 # a very large scale parameter for drop-out achieves the effect 
 # that no one will drop out.
-size1_s <- pwr2n.LR(method = "schoenfeld",lambda0 = lmd0, lambda1 = lmd0*0.5, ratio = ratio, entry = t_fup, fup = t_fup, alpha = alpha, beta  = beta, Lparam = c(1,100000))
+size1_s <- pwr2n.LR(method = "schoenfeld"
+                    ,lambda0 = lmd0
+                    ,lambda1 = lmd0*0.5
+                    ,ratio = ratio
+                    ,entry = t_fup
+                    ,fup = t_fup
+                    ,alpha = alpha
+                    ,beta  = beta
+                    ,Lparam = c(1,100000000))
 
 c(size1_s$eventN, size1_s$totalN)
-#> [1]  87.4793 153.1783
+#> [1]  87.4793 153.1734
+#########Freedman's formula############### 
+size1_f <- pwr2n.LR(method = "freedman"
+                    ,lambda0 = lmd0
+                    ,lambda1 = lmd0*0.5
+                    ,ratio = ratio
+                    ,entry = t_fup
+                    ,fup = t_fup
+                    ,alpha = alpha
+                    ,beta  = beta
+                    ,Lparam = c(1,100000000))
+
+c(size1_f$eventN, size1_f$totalN)
+#> [1]  94.56681 165.58336
+```
+
+### case 2: exponential control group with delayed treatment effects
+
+``` r
+t_enry <- 12  ## entry time 
+t_fup <- 18   ## follow-up time 
+lmd0 <- log(2)/12 # hazard ratio for control group
+ratio <- 1 # allocation ratio
+f_hr_delay <- function(x){(x<=6)+(x>6)*0.75} # hazard ratio #function
+
+##################Maxcombo test ###################
+size2_m <- maxLRT::pwr2n.maxLR(entry     = t_enrl
+            ,fup      = t_fup
+            ,k        = 100
+            ,ratio    = ratio
+            ,Wlist  = wt1
+            ,CtrlHaz=function(x){lmd0*x^0}
+            ,transP1=c(0,0)
+            ,transP0=c(0,0)
+            ,hazR     = f_hr_delay
+            ,alpha    = alpha
+            ,beta     = beta
+  
+            
+)
+target_N <- round(size2_m$totalN,digits=0)
+target_E <- round(size2_m$eventN,digits=0)
+c(target_E,target_N)
+#> [1] 1190 1809
+#### plot the survival curve based on input design parameters 
+plot(size2_m,type="survival")
+```
+
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+
+``` r
+
+################logrank test ########################
+size2_l <- maxLRT::pwr2n.maxLR(entry     = t_enrl
+            ,fup      = t_fup
+            ,k        = 100
+            ,ratio    = ratio
+            ,Wlist  = timef1
+            ,CtrlHaz=function(x){lmd0*x^0}
+            ,transP1=c(0.00,0)
+            ,transP0=c(0.00,0)
+            ,hazR     = f_hr_delay
+            ,alpha    = alpha
+            ,beta     = beta
+  
+            
+)
+target_N <- round(size2_l$totalN,digits=0)
+target_E <- round(size2_l$eventN,digits=0)
+c(target_E,target_N)
+#> [1] 1664 2531
 ```
 
 ### References

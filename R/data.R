@@ -13,10 +13,8 @@
 #' \item{Treatment}{Treatment indicator: 0=stanard,1=test}
 #' \item{censor}{Censor indicator: 1=censor,0=event}
 #' }
-#' @rdname lung
-#'@export
 #'@references
 #'Kalbfleisch, J. D., and Prentice, R. L. (1980). The Statistical
 #'Analysis of Failure Time Data. New York: John Wiley & Sons.
-
+"lung"
 

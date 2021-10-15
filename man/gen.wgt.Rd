@@ -2,30 +2,48 @@
 % Please edit documentation in R/oxy-gen.wgt.R
 \name{gen.wgt}
 \alias{gen.wgt}
-\title{FUNCTION_TITLE}
+\title{Weight Functions for \code{MaxLRtest}}
 \usage{
-gen.wgt(method = c("LR"), param, theta)
+gen.wgt(method = c("LR"), param, theta = 0.5)
 }
 \arguments{
-\item{method}{PARAM_DESCRIPTION, Default: c("LR")}
+\item{method}{a vector of text specifying the method(s). The method(s)
+must be one or some of c(\code{"LR"}, \code{"FH"}, \code{"Wilcoxon"},
+\code{"Tarone"},\code{"Maxcombo"},\code{"Maxcross"}).  Default: c("LR")}
 
-\item{param}{PARAM_DESCRIPTION}
+\item{param}{a vector of length 2. If \code{FH} method is used, the
+\eqn{\rho} and \eqn{\gamma} parameters must be provided, Default: 1}
 
-\item{theta}{PARAM_DESCRIPTION}
+\item{theta}{a value within (0,1). If method \code{Maxcross} is selected,
+\code{theta} should be specified.See details. Default: 0.5}
 }
 \value{
-OUTPUT_DESCRIPTION
+a list of weight functions
 }
 \description{
-FUNCTION_DESCRIPTION
+Generate commonly used weight functions for \code{MaxLRtest}
+function
 }
 \details{
-DETAILS
+The weight function for Fleming-Harrington (FH) test is \eqn{S(t)^\rho(1-S(t)^\gamma)}
+If \code{FH} test is used, both \eqn{\rho} and \eqn{\gamma} should be provided.
+The weight for Tarone and Ware test is \eqn{y(t)^{1/2}}, where \eqn{y(t)} is number
+of subjects at risk. The weight for Wilcoxon test is \eqn{y(t)}.See Klein (2003) for
+more details. Both Maxcombo test and test proposed by Cheng and He (2021)
+needs four weight functions. Cheng's method is more sensitive in detecting
+crossing hazards. A nuisance parameter \code{theta} is required to be
+specified. \code{theta} represents the CDF at crossing time point. If the hazards
+occur in the early phase of the study, a smaller value should be chosen. The
+default value is 0.5.
 }
 \examples{
 \dontrun{
 if(interactive()){
- #EXAMPLE1
+#logrank test
+gen.wgt(method="LR")
+# FH and logrank test
+fn <- gen.wgt(method=c("FH","LR"),param=c(1,1))
+fn[[1]](0.4)
  }
 }
 }

@@ -1,13 +1,13 @@
 Package: maxLRT
 Title: Maximum Weighted Logrank Test and Sample Size Calculation
-Version: 0.0.0.9000
+Version: 0.1.0.9000
 Authors@R: 
     person(given = "Huan",
            family = "Cheng",
            role = c("aut", "cre"),
            email = "hcheng1118@Hotmail.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: The package mainly includes the maximum weighted logrank test and projection test.Besides, it provides functions to simulate time-to-event data from parameter distribution with arbitrary hazard ratio functions. 
+           comment = c(ORCID = "0000-0002-2552-7656"))
+Description: performs combination tests and sample size calculation for fixed design with survival endpoints.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -15,7 +15,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
     survival,
-    dplyr,
     stats,
     mvtnorm,
     MASS,

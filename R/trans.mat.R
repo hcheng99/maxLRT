@@ -6,19 +6,6 @@ trans.mat <- function(...){
  for (i in 1:length(listname)){
     assign(listname[i],getlist[[i]])
   }
-  # num <- getlist$num
-  # x <- getlist$x
-  # k <- getlist$k
-  # ctrlRate <- getlist$ctrlRate
-  # haz_val <- getlist$haz_val
-  # haz_point <- getlist$haz_point
-  # ratio <- getlist$ratio
-  # transP1 <- getlist$transP1
-  # transP0 <- getlist$transP0
-  # fup <- getlist$fup
-  # entry <- getlist$entry
-  # enpdf0 <- getlist$entry_pdf0
-  # enpdf1 <- getlist$entry_pdf1
 
   ##initial states for treatment
   D1 <- c(0,0,1,0,0)

@@ -8,13 +8,14 @@ n2pwr.maxLR<- function(entry   = 1
                        ,transP1
                        ,transP0
                        ,Wlist
+                       ,entry_pdf0=function(x){(1/entry)*(x>=0&x<=entry)}
+                       ,entry_pdf1=entry_pdf0
                        ,eventN
                        ,totalN
                        ,ratio    = 1
                        ,alpha    = 0.05
                        ,alternative=c("two.sided","less","greater")
                        ,k        = 100
-                       ,nocensor = FALSE
                        ,criteria = 100
 ){
   if (missing(eventN)&missing(totalN)){
@@ -28,8 +29,12 @@ n2pwr.maxLR<- function(entry   = 1
   haz_val <- hazR(x)*ctrlRate
   haz_point <- x*k
   ## load the transition matrix
-  load <- trans.mat(num,x,ctrlRate,haz_val,haz_point,ratio,
-                    transP1,transP0,nocensor)
+  load <- trans.mat(num=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
+                    haz_point=haz_point,ratio=ratio,
+                    transP1=transP1,transP0=transP0,k=k,
+                    fup=fup,entry=entry,entry_pdf0=entry_pdf0,
+                    entry_pdf1=entry_pdf1)
+
   pdat <- load$pdat
   eprob <- stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(1,ratio))
   if (missing(eventN)){ eventN <- round(totalN*eprob)}

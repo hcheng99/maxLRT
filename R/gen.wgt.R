@@ -1,6 +1,6 @@
 gen.wgt <- function(method=c("LR")
                     , param
-                    , theta )
+                    , theta =0.5)
   {
 
   if (missing(method)){stop("method must be specified.")}
