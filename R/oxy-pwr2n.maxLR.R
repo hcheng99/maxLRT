@@ -63,6 +63,9 @@ pwr2n.maxLR<- function(entry   = 1
   num <- k*tot_time
   # create the subintervals
   x <- seq(0,tot_time,by=1/k)
+  # if control hazard is zero at x=0, then use a small value for x like
+  # 0.0001
+  if (CtrlHaz(0)==0){x[1] <- 0.0001}
   ctrlRate <- CtrlHaz(x)
   haz_val <- hazR(x)*ctrlRate
   haz_point <- x*k
@@ -162,8 +165,8 @@ pwr2n.maxLR<- function(entry   = 1
     print(inputdata, row.names = FALSE)
     cat("-----Summary of the Output Parameters----- \n ")
     outparam <- c("Number of Events", "Number of Total Sampe Size",
-                  "Aymptotic Power", "Overall Event Rate")
-    outval <- c(dnum, Nsize, as.numeric(power),eprob)
+                  "Asymptotic Power", "Overall Event Rate")
+    outval <- round(c(dnum, Nsize, as.numeric(power),eprob),digits = 3)
     outputdata <- data.frame(parameter=outparam, value=outval)
     print(outputdata, row.names = FALSE)
   }

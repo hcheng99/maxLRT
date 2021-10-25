@@ -96,7 +96,7 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
     cat("-----Summary of the Output Parameters----- \n ")
     outparam <- c("Number of Events", "Number of Total Sampe Size",
                   "Overall Event Rate")
-    outval <- round(c(Dnum, N, Dnum/N),digits=2)
+    outval <- round(c(Dnum, N, Dnum/N),digits=3)
     outputdata <- data.frame(parameter=outparam, value=outval)
     print(outputdata, row.names = FALSE)
   }
