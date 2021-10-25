@@ -80,20 +80,23 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
 
   N=Dnum /erate
 
-  if(summary ==TURE){
+  if(summary ==TRUE){
     cat("-----Summary of the Input Parameters----- \n")
-    inparam <- c("Method", "Lambda1/Lambda0","Entry Time", "Follow-up Time",
+    inparam <- c("Method", "Lambda1/Lambda0/HR","Entry Time", "Follow-up Time",
                  "Allocation Ratio", "Type I Error", "Type II Error",
                  "Alternative","Drop-out Parameter")
-    if (is.null(Lparam)) {Lapram <- NA}
-    inval <- c(method, paste0(lambda1,"/",lambda0),fup,ratio, alpha, beta,
-               alternative,Lparam)
+    if (is.null(Lparam)) {Lparam <- "Not Provided"
+    }else {Lparam <- round(Lparam, digits = 3)}
+    inval <- c(method, paste0(round(lambda1,digits=3),"/",round(lambda0,digits=3),
+                              round(lambda1/lambda0,digits=3)),
+               entry, fup,ratio, alpha, beta,
+               alternative,paste0(Lparam,collapse = ","))
     inputdata <- data.frame(parameter=inparam, value=inval)
     print(inputdata, row.names = FALSE)
     cat("-----Summary of the Output Parameters----- \n ")
     outparam <- c("Number of Events", "Number of Total Sampe Size",
                   "Overall Event Rate")
-    outval <- c(Dnum, N, Dnum/N)
+    outval <- round(c(Dnum, N, Dnum/N),digits=2)
     outputdata <- data.frame(parameter=outparam, value=outval)
     print(outputdata, row.names = FALSE)
   }

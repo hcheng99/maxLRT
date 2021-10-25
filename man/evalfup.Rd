@@ -11,7 +11,7 @@ evalfup(
   size,
   increment = 0.5,
   xlabel = "Follow-up Time",
-  ylabl = "Total Sample Size",
+  ylabel = "Total Sample Size",
   title = "Relationship between Follow-up and \\n Total Sample Size"
 )
 }
@@ -28,7 +28,7 @@ evalfup(
 
 \item{xlabel}{PARAM_DESCRIPTION, Default: 'Follow-up Time'}
 
-\item{ylabl}{PARAM_DESCRIPTION, Default: 'Total Sample Size'}
+\item{ylabel}{PARAM_DESCRIPTION, Default: 'Total Sample Size'}
 
 \item{title}{PARAM_DESCRIPTION, Default: 'Relationship between Follow-up and
 Total Sample Size'}

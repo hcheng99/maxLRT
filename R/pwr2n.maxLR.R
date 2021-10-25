@@ -126,7 +126,7 @@ pwr2n.maxLR<- function(entry   = 1
     cat("-----Summary of the Output Parameters----- \n ")
     outparam <- c("Number of Events", "Number of Total Sampe Size",
                   "Aymptotic Power", "Overall Event Rate")
-    outval <- c(dnum, Nsize, as.numeric(power),eprob)
+    outval <- round(c(dnum, Nsize, as.numeric(power),eprob),digits = 3)
     outputdata <- data.frame(parameter=outparam, value=outval)
     print(outputdata, row.names = FALSE)
   }

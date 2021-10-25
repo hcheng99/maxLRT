@@ -3,7 +3,7 @@
 ###################
 evalfup <- function(object, lower.time, upper.time, size,
                     increment=0.5, xlabel = "Follow-up Time",
-                    ylabl = "Total Sample Size",
+                    ylabel = "Total Sample Size",
                     title = "Relationship between Follow-up and \n Total Sample Size"
                     ){
   fupseq <- seq(from=lower.time, to=upper.time, by=increment)
@@ -31,33 +31,43 @@ evalfup <- function(object, lower.time, upper.time, size,
   Nint <- ceiling(N/(object$RandomizationRatio+1))*(object$RandomizationRatio+1)
   ymax <- max(size,Nint)
   ymin <- min(size,Nint)
-  if (ymax<size){
+  if (max(Nint)<size){
     cat("The largest required sample size (",ymax,") is less than the target
         sampe size", size, ". Consider reduce the follow-up time")
-  }else if (ymin >size){
+  }else if (min(Nint) >size){
     cat("The smallest required sample size (",ymin,") is greater than the target
         sampe size", size, ". Consider increase the follow-up time")
   }
+  flag <-  (max(Nint)<size)|(min(Nint) >size)
   interp <- approx(fupseq,y=Nint,method="linear")
-  y1 <- interp$y
-  x1 <- interp$x
-  p1 <- max(which(y1 >= size))
-  p2 <- min(which(y1  <= size))
-  xsize <- mean(c(x1[p1:p2]))
-  move <- (upper.time-lower.time)/8
+  if (flag != TRUE){
+
+    y1 <- interp$y
+    x1 <- interp$x
+    p1 <- max(which(y1 >= size))
+    p2 <- min(which(y1  <= size))
+    xsize <- mean(c(x1[p1:p2]))
+    move <- (upper.time-lower.time)/8
+  }else {
+    xsize <- NA
+  }
+
   plot(x=fupseq,y=Nint,ylim=c(ymin,ymax),cex=0.8,col="red",
        xlab= xlabel, ylab=ylabel,
        main = title)
   points(interp$x,interp$y,pch=16,cex=0.3)
-  segments(x0=xsize,x1=xsize,y0=0,y1=size,lty=2)
-  segments(x0=0,x1=xsize,y0=size,y1=size,lty=2)
-  text(paste("(",round(xsize,digits = 1),",",size,")"),x=xsize+move,
-  y=size,cex=0.7)
+  if (flag !=TRUE){
+    segments(x0=xsize,x1=xsize,y0=0,y1=size,lty=2)
+    segments(x0=0,x1=xsize,y0=size,y1=size,lty=2)
+    text(paste("(",round(xsize,digits = 1),",",size,")"),x=xsize+move,
+         y=size,cex=0.7)
+  }
+
   legend("topright",legend=c("Orignal","Interpolated"),pch=c(1,16),
          col=c("red","black"),cex=c(0.8))
  # return values
-  original <- list(x=fuptime,y=N)
-  retrun(list(
+  original <- list(x=fupseq,y=N)
+  return(list(
     approx.time = xsize,
     original = original,
     interp = interp,
