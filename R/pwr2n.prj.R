@@ -1,12 +1,12 @@
 
 
 ###input parameters
-pwr2n.maxLR<- function(entry   = 1
+pwr2n.prj<-function(entry   = 1
                        ,fup      = 1
                        ,CtrlHaz
                        ,hazR
-                       ,transP1 = c(0, 0)
-                       ,transP0 = c(0, 0)
+                       ,transP1
+                       ,transP0
                        ,Wlist = list(function(x){ x^0})
                        ,entry_pdf0=function(x){(1/entry)*(x>=0&x<=entry)}
                        ,entry_pdf1=entry_pdf0
@@ -16,7 +16,6 @@ pwr2n.maxLR<- function(entry   = 1
                        ,alternative = c("two.sided")
                        ,criteria = 500
                        ,k        = 100
-                       ,summary = TRUE
 ){
 
   if (!alternative %in% c("two.sided","greater","less")){
@@ -69,39 +68,17 @@ pwr2n.maxLR<- function(entry   = 1
         Vmat[k1,k2] <-  dnum*t(W[,k1]*W[,k2]) %*%(pdat$rho*pdat$eta)
       }
     }
-    rho_est <- stats::cov2cor(Vmat)
-    mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))/sqrt(diag(Vmat))
-    if (alternative=="two.sided"){
-      ftwo <- function(i){
-        #set.seed(i)
-        crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
-                                 mean=rep(0,wn),sigma = rho_est)$quantile
-        power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
-        return(c(crit,power))
-      }
-      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-      power <- ftwod[2]
-      crit <- ftwod[1]
-    }else if (alternative=="less"){ # l1 <l0
-      ftwo <- function(i){
-        # set.seed(i)
-        crit <- mvtnorm::qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
-        power <- 1-mvtnorm::pmvnorm(crit,Inf,mean=mu,sigma = rho_est)[1]
-        return(c(crit,power))
-      }
-      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-      crit <- ftwod[1];  power <- ftwod[2]
-    }else if (alternative=="greater"){
-      ftwo <- function(i){
-        #set.seed(i)
-        crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
-        power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)[1]
-        return(c(crit,power))
-      }
-      ftwod <-  apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-      crit <- ftwod[1];  power <- ftwod[2]
-    }
+    ## get the rank of the variance matrix
+    mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))
+    vr <- qr(Vmat)$rank
+    crit <- stats::qchisq(1-alpha,df=vr)
+    ## get the noncentral parameter
+    lmd <- t(mu)%*%MASS::ginv(Vmat)%*%mu
+    power <- stats::pchisq(crit,df=vr,ncp=lmd,lower.tail = FALSE)
 
+  print(c(vr,crit,lmd,power))
+
+   print(dnum)
     if (power<1-beta&count<criteria) {dnum<-dnum+1}
     else if (count>=criteria){
       warning(paste0("the algoritm doesn't converge within ",criteria," iterations;
@@ -114,35 +91,7 @@ pwr2n.maxLR<- function(entry   = 1
 
   eprob <- stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(1,ratio))
   Nsize <- dnum/eprob
-  if (summary==TRUE){
-    cat("-----Summary of the Input Parameters----- \n")
-    inparam <- c("Entry Time", "Follow-up Time",
-                 "Allocation Ratio", "Type I Error", "Type II Error",
-                 "Alternative","Number of Weights for test")
-    inval <- c(entry,fup,ratio, alpha, beta,
-               alternative,length(Wlist))
-    inputdata <- data.frame(parameter=inparam, value=inval)
-    print(inputdata, row.names = FALSE)
-    cat("-----Summary of the Output Parameters----- \n ")
-    outparam <- c("Number of Events", "Number of Total Sampe Size",
-                  "Aymptotic Power", "Overall Event Rate")
-    outval <- c(dnum, Nsize, as.numeric(power),eprob)
-    outputdata <- data.frame(parameter=outparam, value=outval)
-    print(outputdata, row.names = FALSE)
-  }
-  inputfun <-list(
-    alpha = alpha,
-    beta = beta,
-    transP1 = transP1,
-    transP0 = transP0,
-    k= k,
-    criteria = criteria,
-    controalhazard = CtrlHaz,
-    hazardratio = hazR,
-    entrypdf0  = entry_pdf0,
-    entry_pdf1 = entry_pdf1,
-    Weightfunctions = Wlist
-  )
+ print(c(dnum,Nsize))
 
   listall <- list( eventN  = dnum
                    ,totalN = Nsize
@@ -152,7 +101,6 @@ pwr2n.maxLR<- function(entry   = 1
                    ,pdat = pdat
                    ,studytime=c(entry,fup)
                    ,RandomizationRatio=ratio
-                   ,inputfun = inputfun
 
   )
   class(listall) <-"MaxLRpwr"

@@ -12,13 +12,14 @@ n2pwr.maxLR(
   transP1,
   transP0,
   Wlist,
+  entry_pdf0 = function(x) {     (1/entry) * (x >= 0 & x <= entry) },
+  entry_pdf1 = entry_pdf0,
   eventN,
   totalN,
   ratio = 1,
   alpha = 0.05,
   alternative = c("two.sided", "less", "greater"),
   k = 100,
-  nocensor = FALSE,
   criteria = 100
 )
 }
@@ -47,11 +48,20 @@ from receiving control to receiving treatment (drop-in rate) per time unit.}
 The element of the list must be functions. Default is a list of one constant
 function, corresponding to the logrank test.}
 
+\item{entry_pdf0}{a function, indicating the probability density function (pdf)
+of enrollment time for control group. The default assumes a uniform distribution
+corresponding to the constant enrollment rate.
+Default: function(x) {
+(1/entry) * (x >= 0 & x <= entry)
+}}
+
+\item{entry_pdf1}{a pdf of enrollment time for treatment}
+
 \item{eventN}{the number of events}
 
 \item{totalN}{the number of subjects}
 
-\item{ratio}{allocation ratoi, Default: 1}
+\item{ratio}{allocation ratio, Default: 1}
 
 \item{alpha}{type i error, Default: 0.05}
 
@@ -59,22 +69,63 @@ function, corresponding to the logrank test.}
 
 \item{k}{an integer, indicating number of sub-intervals per time unit, Default: 100}
 
-\item{nocensor}{PARAM_DESCRIPTION, Default: FALSE}
-
-\item{criteria}{PARAM_DESCRIPTION, Default: 100}
+\item{criteria}{an integer indicating the maximum iteration allowed in
+obtaining the number of events. See details , Default: 500}
+}
+\value{
+a list of components:
+\item{power}{asymptotic power }
+\item{eventN}{number of events. If this is the input, it is the input
+number. If totalN is specified, eventN is calculated based on provided
+parameters}
+\item{totalN}{number of subjects. If eventN is specified, totalN is calculated
+based on provided parameters. Otherwise, it the same as input.}
+\item{prob_event}{event probability at the end of trial}
+\item{L_trans}{a list, consisting of tranisition matrix at each inteval}
+\item{pdat}{ a data frame including all the intermediate variables in the calculation.
+}
+\item{studytime}{a vector of length 2, including the entry and follow-up time as input}
+\item{RandomizationRatio}{as input}
 }
 \description{
 \code{n2pwr.maxLR} calcualtes the power given either the
 number of events or number of subjects
 }
+\details{
+Function \code{npwr.maxLR} calculate the asymptotic power given number
+of events or number of subjects using maximum weighted logrank test
+iteratively. Check function \code{pwr2n.maxLR} for more details.
+}
 \examples{
 \dontrun{
 if(interactive()){
- #EXAMPLE1
+ t_enrl <- 12
+t_fup <- 18
+lmd0 <- -log(0.2)/10
+f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+ss <- 1
+ratio <-1
+alpha <- 0.05
+beta <- 0.1
+maxc <- gen.wgt(method="Maxcombo")
+pwr1 <- n2pwr.maxLR(entry   = t_enrl
+                   ,fup      = t_fup
+                 ,CtrlHaz = function(x){x^0*lmd0}
+                 ,hazR = f_hr_delay
+                 ,transP1 = c(0,0)
+                 ,transP0 = c(0,0)
+                 ,Wlist = maxc
+                 ,eventN = 50
+                 ,ratio    = 1
+                 ,alpha    = 0.05
+                 ,alternative=c("two.sided")
+                 ,k        = 100
+                 ,criteria = 100
+)
  }
 }
 }
 \seealso{
-\code{\link[stats]{weighted.mean}},\code{\link[stats]{cor}}
+\code{\link[maxLRT]{pwr2n.maxLR}}
 \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
 }

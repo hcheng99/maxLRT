@@ -2,71 +2,33 @@
 % Please edit documentation in R/oxy-pwr2n.maxLR.R
 \name{plot.MaxLRpwr}
 \alias{plot.MaxLRpwr}
-\title{Graphical Display of Design Parameters in Sample Size Calculation}
+\title{FUNCTION_TITLE}
 \usage{
 \method{plot}{MaxLRpwr}(x, type = c("hazard", "survival", "dropout", "event", "censor"), ...)
 }
 \arguments{
-\item{x}{object of the \code{pwr2n.maxLR} function}
+\item{x}{PARAM_DESCRIPTION}
 
-\item{type}{a vector of string, specifying the graphs to display. The options
-include "\code{hazard}","\code{survival}","\code{dropout}","\code{event}", and
-"\code{censor}". If \code{type} is not provided, all the available graphs are
-generated.}
+\item{type}{PARAM_DESCRIPTION, Default: c("hazard", "survival", "dropout", "event", "censor")}
 
-\item{...}{additional graphical arguments passed to the plot function}
+\item{...}{PARAM_DESCRIPTION}
 }
 \value{
-plots are produced on the current graphics device
+OUTPUT_DESCRIPTION
 }
 \description{
-Displays graphs of survival, hazards, drop-out and censor over time
-as specified in the calculation.
+FUNCTION_DESCRIPTION
 }
 \details{
-The \code{type} argument provides five options to visualize the trial in design.
-Option \code{survival} shows the survival probabilities of treatment and control
-group over time. \code{hazard} option provides the hazard rates and hazard ratio
-over time.\code{dropout} shows the proportion of drop-out subjects across the trial duration.
-\code{censor} shows the proportion of censored subjects over time.
+DETAILS
 }
 \examples{
 \dontrun{
 if(interactive()){
-timef1 <- function(x){1}
-timef2 <- function(x){(x)}
-timef5 <- function(x,pp=1/2){(x<=pp)*(-1/pp*x+1)+(x>pp)*(-1/(1-pp)*(x-pp))}
-W_4e <- list(timef1,timef2,timef3,timef5)
-t_enrl <- 5
-t_fup <- 5
-lmd0 <- -log(0.2)/10
-f_hr <- function(x){0.5*x^0}
-ratio <-1
-alpha <- 0.05
-beta <- 0.1
-### crossing hazards with maximum weighted logrank test
-f_hr_cross <- function(x){(x<=6)*1.2+(x>6)*0.75}
-size <- maxLRT::pwr2n.maxLR(entry     = t_enrl
-                           ,fup      = t_fup
-                           ,k        = 100
-                           ,ratio    = ratio
-                           ,Wlist  = W_4e
-                           ,CtrlHaz=function(x){lmd0*x^0}
-                           ,transP1=c(0.00,0)
-                           ,transP0=c(0.00,0)
-                           ,hazR     = f_hr_cross
-                           ,alpha    = alpha
-                           ,beta     = beta
-
-
-)
-## only plot hazards functions
-plot(size,type="hazard")
-## display all graphs
-plot(size)
+ #EXAMPLE1
  }
 }
 }
 \seealso{
-\code{\link[maxLRT]{pwr2n.maxLR}}
+\code{\link[graphics]{lines}},\code{\link[graphics]{legend}}
 }

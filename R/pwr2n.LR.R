@@ -1,13 +1,14 @@
 pwr2n.LR <- function( method    = c("schoenfeld","freedman")
                           ,lambda0
                           ,lambda1
-                          ,ratio
-                          ,entry    =0
+                          ,ratio  =  1
+                          ,entry  = 0
                           ,fup
-                          ,alpha     = 0.05
-                          ,beta      = 0.1
-                          ,two.side  = TRUE
+                          ,alpha = 0.05
+                          ,beta  = 0.1
+                          ,alternative = c("two.sided")
                           ,Lparam=NULL
+                          ,summary = TRUE
 )
   # the calculation assumes the exponential distribution for control and
   # treatment group
@@ -63,19 +64,39 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
   erate <- stats::weighted.mean(c(e0,e1),
                          w=c(1/(1+ratio),ratio/(1+ratio)))
   ## calculate the number of events
-  numerator=(stats::qnorm(1-alpha/2)+stats::qnorm(1-beta))^2
-
+ if (alternative == "two.sided"){
+   numerator=(stats::qnorm(1-alpha/2)+stats::qnorm(1-beta))^2
+ } else if (alternative == "one.sided"){
+   numerator=(stats::qnorm(1-alpha)+stats::qnorm(1-beta))^2
+ } else {
+   stop ("alternative must be either 'two-sided' or 'one-sided'!")
+ }
   if (method == "schoenfeld"){
     Dnum=numerator*(1+ratio)^2/ratio/log(HR)^2
 
   }else if (method=="freedman"){
-    # numerator=(qnorm(1-alpha/2)+2*sqrt(HR)*qnorm(1-beta)/(HR+1))^2
     Dnum=numerator*(1+HR*ratio)^2/ratio/(1-HR)^2
-    # Dnum=numerator*4*HR/(1-HR)^2
-
   }
 
   N=Dnum /erate
+
+  if(summary ==TURE){
+    cat("-----Summary of the Input Parameters----- \n")
+    inparam <- c("Method", "Lambda1/Lambda0","Entry Time", "Follow-up Time",
+                 "Allocation Ratio", "Type I Error", "Type II Error",
+                 "Alternative","Drop-out Parameter")
+    if (is.null(Lparam)) {Lapram <- NA}
+    inval <- c(method, paste0(lambda1,"/",lambda0),fup,ratio, alpha, beta,
+               alternative,Lparam)
+    inputdata <- data.frame(parameter=inparam, value=inval)
+    print(inputdata, row.names = FALSE)
+    cat("-----Summary of the Output Parameters----- \n ")
+    outparam <- c("Number of Events", "Number of Total Sampe Size",
+                  "Overall Event Rate")
+    outval <- c(Dnum, N, Dnum/N)
+    outputdata <- data.frame(parameter=outparam, value=outval)
+    print(outputdata, row.names = FALSE)
+  }
   return(list(eventN=Dnum,totalN=N))
 }
 
