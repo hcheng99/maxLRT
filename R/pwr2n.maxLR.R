@@ -146,7 +146,7 @@ pwr2n.maxLR<- function(entry   = 1
     entry_pdf1 = entry_pdf1,
     Weightfunctions = Wlist
   )
-
+  names(event) <- paste0("w", 1:wn)
   listall <- list( eventN  = dnum
                    ,totalN = Nsize
                    ,pwr = as.numeric(power)
@@ -155,6 +155,7 @@ pwr2n.maxLR<- function(entry   = 1
                    ,pdat = pdat
                    ,studytime=c(entry,fup)
                    ,RandomizationRatio=ratio
+                   ,eventList = event
                    ,inputfun = inputfun
 
   )

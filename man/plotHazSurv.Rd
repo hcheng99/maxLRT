@@ -10,7 +10,8 @@ plotHazSurv(
   fun_list,
   end,
   tit = c("Hazard Function", "Survival Function"),
-  pos = c(1, 2)
+  pos = c(1, 2),
+  hlegend.loc = "bottomleft"
 )
 }
 \arguments{

@@ -6,6 +6,7 @@ plotHazSurv <- function(
   ,end
   ,tit= c("Hazard Function","Survival Function")
   ,pos=c(1,2)
+  ,hlegend.loc ="bottomleft"
 ){
   t <- seq(0.5,end,length=300)
   fn <- length(tit)
@@ -40,7 +41,7 @@ plotHazSurv <- function(
     dis <-tit[1]
     graphics::mtext(dis, side=3,line=1,adj=0,cex=0.8)
   graphics::par(xpd=TRUE)
-    graphics::legend("bottomleft",legend = c("Treatment Group", "Control Group"), lty=c(1,2), lwd = 1,
+    graphics::legend(hlegend.loc,legend = c("Treatment Group", "Control Group"), lty=c(1,2), lwd = 1,
            col=c("red","blue"), xpd = TRUE, horiz = FALSE, cex = 0.5)
 
 
