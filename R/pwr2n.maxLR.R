@@ -51,7 +51,7 @@ pwr2n.maxLR<- function(entry   = 1
     part2=(qnorm(1-alpha)+qnorm(1-beta))^2
   }
   for (j in 1:wn){
-    W[,j] <- Wlist[[j]](pdat$S)
+    W[,j] <- Wlist[[j]](1-pdat$S) # to be consistent with MWLR test
     wgt <- W[,j]
     part1=t(pdat$rho)%*%(pdat$eta*wgt^2)
     part3=t(pdat$rho)%*%(pdat$gamma*wgt)

@@ -1,5 +1,5 @@
-Package: maxLRT
-Title: Maximum Weighted Logrank Test and Sample Size Calculation
+Package: nphSize
+Title: Sample Size Calculation under Non-proportional Hazards
 Version: 0.1.0.9000
 Authors@R: 
     person(given = "Huan",
@@ -24,7 +24,7 @@ Suggests:
     knitr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-URL: https://github.com/hcheng99/maxLRT
+URL: https://github.com/hcheng99/nphSize
 Depends: 
     R (>= 2.10)
 VignetteBuilder: knitr
