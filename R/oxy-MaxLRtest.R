@@ -77,8 +77,7 @@
 #' plot(t2)
 #' }
 #' @seealso
-#'  \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
-#' @rdname MaxLRtest
+#'  \code{\link{pwr2n.maxLR}}
 #' @export
 #' @importFrom mvtnorm qmvnorm pmvnorm
 MaxLRtest <- function(dat

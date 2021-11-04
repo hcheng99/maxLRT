@@ -16,7 +16,7 @@ simu.trial(
   HR_fun,
   ratio,
   upInt = 100,
-  print = TRUE
+  summary = TRUE
 )
 }
 \arguments{
@@ -49,10 +49,10 @@ and control group}
 \item{ratio}{allocation ratio between treatment and control group.
 For example, \code{allocation_ratio}=2 if 2:1 allocation is used.}
 
-\item{upInt}{a value indicating the upper bound usedin the uniroot function.
+\item{upInt}{a value indicating the upper bound used in the \code{uniroot} function.
 See details.  Default: 100}
 
-\item{print}{a logical indicating whether basic information summary is printed
+\item{summary}{a logical indicating whether basic information summary is printed
 to the console or not, Default: TRUE}
 }
 \value{
@@ -71,7 +71,6 @@ censor.}
 \item{event}{event indicator with 1 indicating event and 0 indicating censor}
 \item{entry.time}{time when the patient is enrolled in the study}
 }
-
 summary information of the trial including
 
 \describe{
@@ -110,12 +109,15 @@ function, describing the change of hazard ratio over time. In case of proportion
 hazards, \eqn{g(t)} is a constant. The survival function for treatment group
 is \eqn{S_1(t)=exp(-\int_0^t g(s)\lambda_0(s)ds)}. The Survival time T is
 given by \eqn{T=S_1^(-1)(U)}, where U is drawn from uniform (0,1). More details
-can be found in Bender, et al. (2005).
+can be found in Bender, et al. (2005). Function \code{uniroot} from
+\code{stats} package is used to generate the random variable. The argument
+\code{upInt} in \code{simu.trial} function corresponds to the upper end point
+of the search interval and it can be adjusted by user if the default value 100
+is not appropriate. More details can be found in help file of \code{uniroot}
+function.
 }
 \examples{
 \dontrun{
-if(interactive()){
-library("maxLRT")
 # total sample size
 N <- 300
 # target event
@@ -144,7 +146,6 @@ set.seed(123445)
 data2 <- simu.trial(type="time",trial_param=c(N,entry,fup),bsl_dist="weibull",
                     bsl_param=b_weibull,drop_param0=drop_weibull,HR_fun=HRf,
                     ratio=RR)
- }
 }
 }
 \references{
@@ -152,5 +153,5 @@ Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to si
 hazards models. Statistics in medicine, 24(11), 1713-1723.
 }
 \seealso{
-\code{\link[stats]{Weibull}},\code{\link[stats]{Logistic}}
+\code{\link[stats]{uniroot}}
 }

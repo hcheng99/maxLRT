@@ -1,13 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# package: nphSize
+# package: nphPower
 
 <!-- badges: start -->
 
 <!-- badges: end -->
 
-Package: nphSize provides functions to perform combination test
+Package: nphPower provides functions to perform combination test
 including maximum weighted logrank test (MWLR) and projection test, to
 calculate sample size with MWLR in a simulation-free approach allowing
 for staggered entry, drop-out etc, to visualize the design parameters
@@ -15,12 +15,24 @@ and to simulate survival data with flexible design input.
 
 ## Installation
 
-You can install the released version of nphSize from
+You can install the released version of nphPower from
 [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-#install.packages("nphSize")
+#install.packages("nphPower")
 ```
+
+And the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+#devtools::install_github("hcheng99/nphPower")
+```
+
+## Example 1 - perform maximum weighted logrank test
+
+This is a basic example which shows you how to perform maximum weighted
+logrank test.
 
 ### References
 

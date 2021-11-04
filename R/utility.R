@@ -80,18 +80,21 @@ CrtTM_C <- function(Plist,K=10,tott,epdf0,epdf1,i=i){
                     ylist[4:6],1-sum(ylist[4:6],tmp1),tmp1,
                     0,0,0,0,1), ncol=5)
 
-  if (tmp1>=1){
+  if (sum(tranM[c(1,2,5),3])>=1){
     tranM[3:4,3] <- 0
     tranM[5,3] <- 1-sum(tranM[1:2,3])
+
   }
-  if (tmp0>=1){
+  if (sum(tranM[c(1,2,5),4])>=1){
     tranM[3:4,4] <- 0
     tranM[5,4] <- 1-sum(tranM[1:2,4])
+
   }
 
   if (sum(tranM<0) >0){
     print(i)
     print(tranM)
+
     stop("The transition matrix has negative values. Please check!")}
 
   return(tranM)

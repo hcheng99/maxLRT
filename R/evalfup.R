@@ -3,13 +3,14 @@
 ###################
 evalfup <- function(object, lower.time, upper.time, size,
                     increment=0.5, xlabel = "Follow-up Time",
-                    ylabel = "Total Sample Size",
+                    ylabel = "Total Sample Size/Event Number",
                     title = "Relationship between Follow-up and \n Total Sample Size"
                     ){
   fupseq <- seq(from=lower.time, to=upper.time, by=increment)
   N <- c()
   D <- c()
   for (i in 1: length(fupseq)){
+    #print(fupseq[i])
     tmp <- pwr2n.maxLR(entry     = object$studytime[1]
                 ,fup      = fupseq[i]
                 ,k        = object$inputfun$k
@@ -29,17 +30,18 @@ evalfup <- function(object, lower.time, upper.time, size,
     D <- c(D,tmp$eventN)
   }
   Nint <- ceiling(N/(object$RandomizationRatio+1))*(object$RandomizationRatio+1)
+  Dint <- ceiling(D)
   ymax <- max(size,Nint)
   ymin <- min(size,Nint)
   if (max(Nint)<size){
-    cat("The largest required sample size (",ymax,") is less than the target
+    cat("The largest required sample size (",max(Nint),") is less than the target
         sampe size", size, ". Consider reduce the follow-up time")
   }else if (min(Nint) >size){
-    cat("The smallest required sample size (",ymin,") is greater than the target
+    cat("The smallest required sample size (",min(Nint),") is greater than the target
         sampe size", size, ". Consider increase the follow-up time")
   }
   flag <-  (max(Nint)<size)|(min(Nint) >size)
-  interp <- approx(fupseq,y=Nint,method="linear")
+  interp <- stats::approx(fupseq,y=Nint,method="linear")
   if (flag != TRUE){
 
     y1 <- interp$y
@@ -47,24 +49,26 @@ evalfup <- function(object, lower.time, upper.time, size,
     p1 <- max(which(y1 >= size))
     p2 <- min(which(y1  <= size))
     xsize <- mean(c(x1[p1:p2]))
-    move <- (upper.time-lower.time)/8
+    move <- (upper.time-lower.time)/7
   }else {
     xsize <- NA
   }
 
-  plot(x=fupseq,y=Nint,ylim=c(ymin,ymax),cex=0.8,col="red",
+  plot(x=fupseq,y=Nint,ylim=c(min(Dint),ymax),cex=0.8,col="red",
        xlab= xlabel, ylab=ylabel,
        main = title)
-  points(interp$x,interp$y,pch=16,cex=0.3)
+  graphics::points(interp$x,interp$y,pch=16,cex=0.3)
+  graphics::points(x=fupseq, y = Dint, cex = 0.5, col = "blue", pch = 17)
   if (flag !=TRUE){
-    segments(x0=xsize,x1=xsize,y0=0,y1=size,lty=2)
-    segments(x0=0,x1=xsize,y0=size,y1=size,lty=2)
-    text(paste("(",round(xsize,digits = 1),",",size,")"),x=xsize+move,
-         y=size,cex=0.7)
+    graphics::segments(x0=xsize,x1=xsize,y0=0,y1=size,lty=2)
+    graphics::segments(x0=0,x1=xsize,y0=size,y1=size,lty=2)
+    graphics::text(paste0("(",round(xsize,digits = 1),", ",size,")"),x=xsize+move,
+         y=size*1.05,cex=0.7)
   }
 
-  legend("topright",legend=c("Orignal","Interpolated"),pch=c(1,16),
-         col=c("red","black"),cex=c(0.8))
+  legend("topright",legend=c("Orignal N","Interpolated N", "Event Number"),
+         pch=c(1, 16, 17),
+         col=c("red","black","blue"),cex=c(0.8))
  # return values
   original <- list(x=fupseq,y=N)
   return(list(

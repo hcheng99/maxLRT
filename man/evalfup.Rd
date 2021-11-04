@@ -2,7 +2,7 @@
 % Please edit documentation in R/oxy-evalfup.R
 \name{evalfup}
 \alias{evalfup}
-\title{FUNCTION_TITLE}
+\title{Visualization of the Relationship between Follow-up and Sample Size}
 \usage{
 evalfup(
   object,
@@ -11,41 +11,72 @@ evalfup(
   size,
   increment = 0.5,
   xlabel = "Follow-up Time",
-  ylabel = "Total Sample Size",
+  ylabel = "Total Sample Size/Event Number",
   title = "Relationship between Follow-up and \\n Total Sample Size"
 )
 }
 \arguments{
-\item{object}{PARAM_DESCRIPTION}
+\item{object}{returned object by function \code{pwr2n.maxLR}}
 
-\item{lower.time}{PARAM_DESCRIPTION}
+\item{lower.time}{a numeric value specifying the shortest duration time}
 
-\item{upper.time}{PARAM_DESCRIPTION}
+\item{upper.time}{a numeric value specifying the longest duration time}
 
-\item{size}{PARAM_DESCRIPTION}
+\item{size}{an integer specifying the planned total sample size}
 
-\item{increment}{PARAM_DESCRIPTION, Default: 0.5}
+\item{increment}{a numeric value as an increment number used for creating
+a sequence of duration times in plotting, Default: 0.5}
 
-\item{xlabel}{PARAM_DESCRIPTION, Default: 'Follow-up Time'}
+\item{xlabel}{a text for labeling the x axis in the plot, Default: 'Follow-up Time'}
 
-\item{ylabel}{PARAM_DESCRIPTION, Default: 'Total Sample Size'}
+\item{ylabel}{a text for labeling the y axis in the plot, Default: 'Total Sample Size'}
 
-\item{title}{PARAM_DESCRIPTION, Default: 'Relationship between Follow-up and
+\item{title}{a text for title in the plot: 'Relationship between Follow-up and
 Total Sample Size'}
 }
 \value{
-OUTPUT_DESCRIPTION
+a graph shows the relationship and a list of components:
+\item{approx.time}{approximate follow-up time corresponding to specified sample size
+reaching the same target power }
+\item{original}{a list with elements of \code{x} and \code{y}. Vector \code{x} contains
+the follow-up duration and vector \code{y} contains the corresponding sample
+size}
+\item{interp}{a list containing the interpolated \code{x} and \code{y} included
+in \code{original}}
+\item{Esize}{a vector of events number corresponding to \code{x} in \code{original}}
 }
 \description{
-FUNCTION_DESCRIPTION
+\code{evalfup} function displays the graph showing the relationship
+between the follow-up time and the total sample size required to achieve the the
+same power
 }
 \details{
-DETAILS
+The \code{evalfun} function helps to evaluate the relationship between
+sample size/event number and follow-up duration. It retrieves the trial
+design information for the \code{object} returned by \code{pwr2n.maxLR}
+function. A sequence of follow-up times starting from \code{lower.time}
+and ending with \code{upper.time} are generated. The number of subjects and
+number of events required for achieving the specified power in \code{ojbect}
+are calculated at each time points. An interpolation function \code{approx}
+function from \pkg{stats} is applied to smooth the curves. In case of
+proportional hazards, the follow-up duration has little impact on the
+event number except for variations from numeric approximation, while in
+case of nonproportional hazards, the follow-up  imposes an important impact
+on both the total sample size and event number.
 }
 \examples{
 \dontrun{
-if(interactive()){
- #EXAMPLE1
- }
+# define design parameters
+t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
+#define hazard ratio function
+f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+# perform sample size calculation
+snph1 <- pwr2n.maxLR(entry = t_enrl, fup = t_fup, Wlist = wlr,
+                    k = 100, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay
+)
+# draw the graph
+efun <- evalfup(snph1,lower.time = 12, upper.time = 24, size = 2200,
+               title = NULL
+)
 }
 }

@@ -1,5 +1,5 @@
 trans.mat <- function(...){
- fup <- num <-k <- transP1 <- haz_val <- transP0 <-NULL
+ fup <- numN <-k <- transP1 <- haz_val <- transP0 <-NULL
  ctrlRate <- entry <- entry_pdf0 <- entry_pdf1 <- ratio <- NULL
  getlist <- list(...)
  listname <- names(getlist)
@@ -12,12 +12,13 @@ trans.mat <- function(...){
   ##initial states for control
   D0 <- c(0,0,0,1,0)
   temp <- diag(rep(1,4))
-  pdat <- matrix(NA,nrow=num,ncol=21)
+  pdat <- matrix(NA,nrow = round(numN,digits = 0),ncol=21)
   ti <-0
   l <- 1
   L_trans <- list()
-  for (i in 1:num){
-    j <- ceiling(i/k)
+  for (i in 1:numN){
+    #j <- ceiling(i/k)
+    j <- i/k
     trans.prob <- c(transP1[1],haz_val[i],transP1[2],transP0[1],ctrlRate[i],
                     transP0[2])
     # before a, there is no censor
@@ -26,8 +27,8 @@ trans.mat <- function(...){
         L_trans[[i]] <- cbind(rbind(CrtTM(Plist = trans.prob,K=k),rep(0,4)),
                               c(0,0,0,0,1))
 
-      }else {
-        L_trans [[i]] <- CrtTM_C(Plist = trans.prob,tott=entry+fup,
+      }else if (j > fup){
+        L_trans[[i]] <- CrtTM_C(Plist = trans.prob,tott=entry+fup,
                                  epdf0=entry_pdf0,epdf1=entry_pdf1,K=k,i=i)
 
       }
@@ -36,8 +37,10 @@ trans.mat <- function(...){
     ti <- ti+1/k
     if (i==1){temp1 <- L_trans[[i]]%*%D1 ; temp0 <- L_trans[[i]]%*%D0
     } else {temp1 <- L_trans[[i]]%*%temp1; temp0 <- L_trans[[i]]%*%temp0;}
-
+     #if(numN-i<4){print(i); print(L_trans[[i]])}
     pdat[i,1:11] <- c(ti,t(temp1),t(temp0))
+    #print(c(j,fup, ti,t(temp1),t(temp0)))
+
     if (i==1) {
       #phi
       pdat[i,12] <- 1
@@ -66,10 +69,10 @@ trans.mat <- function(...){
     # print(pdat[i,])
   }
   #pdat
-  rho <- (pdat[num,3]*ratio+pdat[num,8])/(ratio+1)
+  rho <- (pdat[numN,3]*ratio+pdat[numN,8])/(ratio+1)
 
   ## sample size
-  for (i in 1:num){
+  for (i in 1:numN){
     ## S1
     pdat[i,20] <- prod(1-pdat[1:i,13])
     ## S0
@@ -91,7 +94,7 @@ trans.mat <- function(...){
     c("ti","E_L","E_E","E_Ae","E_Ac","E_C","C_L","C_E","C_Ae",
       "C_Ac","C_C","phi","hazard_E","hazard_C","theta","gamma","eta",
       "rho","S","S1","S0")
-  ## number of weight functions
+  ## numNber of weight functions
   pdat$eprob <- apply(cbind(pdat$C_E,pdat$E_E),1,
                       function(x) {stats::weighted.mean(c(x[1],x[2]),
                                                         w=c(1,ratio))})

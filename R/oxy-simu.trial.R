@@ -22,9 +22,9 @@
 #' and control group
 #' @param ratio allocation ratio between treatment and control group.
 #' For example, \code{allocation_ratio}=2 if 2:1 allocation is used.
-#' @param upInt a value indicating the upper bound usedin the uniroot function.
+#' @param upInt a value indicating the upper bound used in the \code{uniroot} function.
 #' See details.  Default: 100
-#' @param print a logical indicating whether basic information summary is printed
+#' @param summary a logical indicating whether basic information summary is printed
 #' to the console or not, Default: TRUE
 #' @return
 #' A list containing the following components
@@ -42,7 +42,6 @@
 #' \item{event}{event indicator with 1 indicating event and 0 indicating censor}
 #' \item{entry.time}{time when the patient is enrolled in the study}
 #'}
-#'
 #' summary information of the trial including
 #'
 #' \describe{
@@ -53,9 +52,8 @@
 #' period. For \code{event} type of design, the value is the calendar time of the
 #' last event.}
 #' }
-
-#' @details
 #'
+#'@details
 #' The loglogistic distribution for the event time has the
 #' survival function \eqn{S(x)=b^a/(b^a+x^a)} and hazard function
 #' \eqn{\lambda(x)=a/b(x/b)^(a-1)/(1+(t/b)^a)},, where \eqn{a} is the shape parameter
@@ -77,14 +75,19 @@
 #' hazards, \eqn{g(t)} is a constant. The survival function for treatment group
 #' is \eqn{S_1(t)=exp(-\int_0^t g(s)\lambda_0(s)ds)}. The Survival time T is
 #' given by \eqn{T=S_1^(-1)(U)}, where U is drawn from uniform (0,1). More details
-#' can be found in Bender, et al. (2005).
+#' can be found in Bender, et al. (2005). Function \code{uniroot} from
+#' \code{stats} package is used to generate the random variable. The argument
+#' \code{upInt} in \code{simu.trial} function corresponds to the upper end point
+#' of the search interval and it can be adjusted by user if the default value 100
+#' is not appropriate. More details can be found in help file of \code{uniroot}
+#' function.
+#'
 #' @references
 #' Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional
 #' hazards models. Statistics in medicine, 24(11), 1713-1723.
+
 #' @examples
 #' \dontrun{
-#' if(interactive()){
-#' library("maxLRT")
 #' # total sample size
 #' N <- 300
 #' # target event
@@ -113,14 +116,12 @@
 #' data2 <- simu.trial(type="time",trial_param=c(N,entry,fup),bsl_dist="weibull",
 #'                     bsl_param=b_weibull,drop_param0=drop_weibull,HR_fun=HRf,
 #'                     ratio=RR)
-#'  }
 #' }
 #' @seealso
-#'  \code{\link[stats]{Weibull}},\code{\link[stats]{Logistic}}
+#'  \code{\link[stats]{uniroot}}
 #' @rdname simu.trial
 #' @export
 #' @importFrom stats rweibull integrate rlogis uniroot runif
-
 simu.trial <- function(type=c("event","time")
                        ,trial_param # include the total sample size,entry time,
                        # target event (event type)/fup time (time )
@@ -133,7 +134,7 @@ simu.trial <- function(type=c("event","time")
                        ,HR_fun #the non proportion hazard function
                        ,ratio # # of trt/# of placebo
                        ,upInt=100
-                       ,print=TRUE
+                       ,summary=TRUE
 ){
 
   if (length(trial_param) !=3) {stop("The trial parameters must include
@@ -171,7 +172,7 @@ simu.trial <- function(type=c("event","time")
     Hf <- function(t){exp(-1* a/b*integrate( function(x){(x/b)^{a-1}/(1+(x/b)^a)*HR_fun(x)},0,t)$value)}
   }
   gen_t <- function(y){stats::uniroot(function(x){Hf(x)-y},interval = c(0,upInt),extendInt="yes")$root}
-  # set.seed(seed*10)
+ # set.seed(seed*10)
   U1 <- stats::runif(n1)
   T_1 <-as.vector(unlist(lapply(U1, gen_t)))
   Tm<-c(T_0,T_1)
@@ -180,8 +181,9 @@ simu.trial <- function(type=c("event","time")
   #* Simulate drop-out Time
   #****************************
   if (missing(drop_param0)&missing(drop_param1)){
-    warning("No drop-out parameters are provided. Drop-out is not considered
-            in the simulation.")
+    cat("Notes: No drop-out parameters are provided.
+Drop-out is not considered in the simulation.")
+
   }else if (missing(drop_param0)){
     drop_param0 <- drop_param1
   }else if (missing(drop_param1)){
@@ -207,10 +209,10 @@ simu.trial <- function(type=c("event","time")
   #- create the CDF;
   ent_cdf0 <- function(t){stats::integrate(entry_pdf0,lower=0,upper=t)$value}
   gen_ent0 <- function(y){stats::uniroot(function(x){ent_cdf0(x)-y},
-                                         interval = c(0,upInt),extendInt="yes")$root}
+                                  interval = c(0,upInt),extendInt="yes")$root}
   ent_cdf1 <- function(t){stats::integrate(entry_pdf1,lower=0,upper=t)$value}
   gen_ent1 <- function(y){stats::uniroot(function(x){ent_cdf1(x)-y},
-                                         interval = c(0,upInt),extendInt="yes")$root}
+                                  interval = c(0,upInt),extendInt="yes")$root}
 
   #set.seed(seed+1)
   tu0_0 <- runif(n0)
@@ -233,7 +235,7 @@ simu.trial <- function(type=c("event","time")
                                for event, entry and drop-out parameters")}
 
     Dur <- min(dat[dat$c0==t_p3,]$ot )
-  }else{
+    }else{
     Dur <- t_p2+t_p3 # the length of study
   }
   min_ind <- apply(cbind(dat$ot,Dur,dat$ot_drop),1,which.min)
@@ -257,15 +259,14 @@ simu.trial <- function(type=c("event","time")
   )
   )
   #table(final$group,final$cnsr.desc)
-  if (print==TRUE){
-    s0 <- paste("The specified trial type is",type,"\n")
-    s1 <- paste("The specified entry time is",t_p2,"\n")
-    s2 <- paste("The max observed time is",Dur,"\n")
-    s3 <- paste("Number of events is",sum(final$event),"\n")
-    cat(s0)
-    cat(s1)
-    cat(s2)
-    cat(s3)
+  if (summary==TRUE){
+    ctext <- c("Trial Type:", "Entry Time:", "Maximum Study Duration:",
+               "Number of Subjects:", "Number of Events:")
+    cval <- c(type,t_p2,round(Dur,digits = 2),t_p1, sum(final$event))
+    csum <- data.frame(parameter=ctext, value=cval)
+    cat("\n -------- Summary of the Simulation -------- \n")
+    print(csum)
+
   }
 
   list <- list(data=final,
@@ -275,4 +276,3 @@ simu.trial <- function(type=c("event","time")
   class(list) <- 'SimuTrial'
   return(list)
 }
-

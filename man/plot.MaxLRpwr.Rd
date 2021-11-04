@@ -2,33 +2,50 @@
 % Please edit documentation in R/oxy-pwr2n.maxLR.R
 \name{plot.MaxLRpwr}
 \alias{plot.MaxLRpwr}
-\title{FUNCTION_TITLE}
+\title{Graphical Display of Design Parameters in Sample Size Calculation}
 \usage{
 \method{plot}{MaxLRpwr}(x, type = c("hazard", "survival", "dropout", "event", "censor"), ...)
 }
 \arguments{
-\item{x}{PARAM_DESCRIPTION}
+\item{x}{object of the \code{pwr2n.maxLR} function}
 
-\item{type}{PARAM_DESCRIPTION, Default: c("hazard", "survival", "dropout", "event", "censor")}
+\item{type}{a vector of string, specifying the graphs to display. The options
+include "\code{hazard}","\code{survival}","\code{dropout}","\code{event}", and
+"\code{censor}". If \code{type} is not provided, all the available graphs are
+generated.}
 
-\item{...}{PARAM_DESCRIPTION}
+\item{...}{additional graphical arguments passed to the plot function}
 }
 \value{
-OUTPUT_DESCRIPTION
+plots are produced on the current graphics device
 }
 \description{
-FUNCTION_DESCRIPTION
+Displays graphs of survival, hazards, drop-out and censor over time
+as specified in the calculation.
 }
 \details{
-DETAILS
+The \code{type} argument provides five options to visualize the trial in design.
+Option \code{survival} shows the survival probabilities of treatment and control
+group over time. \code{hazard} option provides the hazard rates and hazard ratio
+over time.\code{dropout} shows the proportion of drop-out subjects across the trial duration.
+\code{censor} shows the proportion of censored subjects over time.
 }
 \examples{
 \dontrun{
-if(interactive()){
- #EXAMPLE1
- }
+# generate a list of weight functions for maxcombo test
+ wmax <- gen.wgt(method = "Maxcombo" )
+ t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
+ f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+ f_haz0 <- function(x){lmd0*x^0}
+ snph1 <- pwr2n.maxLR(entry = t_enrl, fup = t_fup, Wlist = wmax,
+                    k = 10, ratio = 2, CtrlHaz = f_haz0,
+                    hazR = f_hr_delay)
+ # display the hazards plot only
+ plot(snph1, type="hazard")
+ # display all plots
+ plot(snph1)
 }
 }
 \seealso{
-\code{\link[graphics]{lines}},\code{\link[graphics]{legend}}
+\code{\link[nphPower]{pwr2n.maxLR}}
 }

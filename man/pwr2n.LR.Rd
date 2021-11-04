@@ -2,7 +2,8 @@
 % Please edit documentation in R/oxy-pwr2n.LR.R
 \name{pwr2n.LR}
 \alias{pwr2n.LR}
-\title{FUNCTION_TITLE}
+\alias{phsize}
+\title{Sample Size Calculation under Proportional Hazards}
 \usage{
 pwr2n.LR(
   method = c("schoenfeld", "freedman"),
@@ -19,44 +20,94 @@ pwr2n.LR(
 )
 }
 \arguments{
-\item{method}{PARAM_DESCRIPTION, Default: c("schoenfeld", "freedman")}
+\item{method}{calculation formula, Default: c("schoenfeld", "freedman")}
 
-\item{lambda0}{PARAM_DESCRIPTION}
+\item{lambda0}{hazard rate for the control group}
 
-\item{lambda1}{PARAM_DESCRIPTION}
+\item{lambda1}{hazard rate for the treatment group}
 
-\item{ratio}{PARAM_DESCRIPTION, Default: 1}
+\item{ratio}{randomization ratio between treatment and control. For example,
+ratio=2 if randomization ratio is 2:1 to treatment and control group.
+Default:1}
 
-\item{entry}{PARAM_DESCRIPTION, Default: 0}
+\item{entry}{enrollment time. A constant enrollment rate is assumed,
+Default: 0}
 
-\item{fup}{PARAM_DESCRIPTION}
+\item{fup}{follow-up time.}
 
-\item{alpha}{PARAM_DESCRIPTION, Default: 0.05}
+\item{alpha}{type I error rate, Default: 0.05}
 
-\item{beta}{PARAM_DESCRIPTION, Default: 0.1}
+\item{beta}{type II error rate. For example,if the target power is 80\%, beta is 0.2.
+Default: 0.1}
 
-\item{alternative}{PARAM_DESCRIPTION, Default: c("two.sided")}
+\item{alternative}{a value must be one of ("two.sided", "one.sided"), indicating
+whether a two-sided or one-sided test to use.  Default: c("two.sided")}
 
-\item{Lparam}{PARAM_DESCRIPTION, Default: NULL}
+\item{Lparam}{a vector of parameters for the drop-out Weibull distribution,
+See Details below. Default: NULL}
 
-\item{summary}{PARAM_DESCRIPTION, Default: TRUE}
+\item{summary}{a logical controlling whether a brief summary is printed or not
+, Default: TRUE}
 }
 \value{
-OUTPUT_DESCRIPTION
+\item{eventN}{The total number of events}
+\item{totalN}{The total number of subjects}
 }
 \description{
-FUNCTION_DESCRIPTION
+\code{pwr2n.LR} calculates the total number of events and total
+number of subjects required given the provided design parameters based on either
+schoenfeld or freedman formula.
 }
 \details{
-DETAILS
+The total event number is determined only by \eqn{\alpha, \beta} and
+hazard ratio, i.e., \eqn{\lambda_1/\lambda_0}. Other design parameters such as
+enrollment period affects the event probability and thus the total sample size.
+A fixed duration design is assumed in the calculation. ALl patients are enrolled
+at a constant rate within \code{entry} time and have at least \code{fup}
+time of follow-up. So the total study duration is \code{entry}+\code{fup}.
+If drop-out is expected, a Weibull distribution with shape parameter -\eqn{\alpha}
+and scale parameter - \eqn{\beta} is considered. The CDF is
+\eqn{F(x)=1-exp(-(x/\beta)^\alpha)}.
 }
 \examples{
 \dontrun{
-if(interactive()){
- #EXAMPLE1
- }
+l0 <- log(2)/14; HR <- 0.8; RR <- 2; entry <- 12; fup <- 12;
+eg1 <- pwr2n.LR( method    = c("schoenfeld")
+                 ,l0
+                 ,l0*HR
+                 ,ratio=RR
+                 ,entry
+                 ,fup
+                 ,alpha     = 0.05
+                 ,beta      = 0.1
+)
+# event number, total subjects, event probability
+c(eg1$eventN,eg1$totalN,eg1$eventN/eg1$totalN)
+
+# example 2: drop-out from an exponential with median time is 30
+eg2 <- pwr2n.LR( method    = c("schoenfeld")
+                 ,l0
+                 ,l0*HR
+                 ,ratio=RR
+                 ,entry
+                 ,fup
+                 ,alpha     = 0.05
+                 ,beta      = 0.1
+                 ,Lparam = c(1,30/log(2))
+)
+# event number, total subjects, event probability
+c(eg2$eventN,eg2$totalN,eg2$eventN/eg2$totalN)
 }
+}
+\references{
+Schoenfeld, D. (1981) The asymptotic properties of nonparametric
+tests for comparing survival distributions. Biometrika, 68,
+316–319.
+
+Freedman, L. S. (1982) Tables of the number of patients required
+in clinical trials using the logrank test. Statistics in medicine, 1, 121–129.
 }
 \seealso{
-\code{\link[stats]{integrate}},\code{\link[stats]{weighted.mean}},\code{\link[stats]{Normal}}
+\code{\link{pwr2n.maxLR}}, \code{\link{pwr2n.prj}},
+\code{\link{evalfup}}
 }

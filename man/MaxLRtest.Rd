@@ -100,5 +100,5 @@ plot(t2)
 }
 }
 \seealso{
-\code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
+\code{\link{pwr2n.maxLR}}
 }

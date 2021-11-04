@@ -1,6 +1,6 @@
-#' @title Weight Functions for \code{MaxLRtest}
+#' @title Weight Function Generation
 #' @description Generate commonly used weight functions for \code{MaxLRtest}
-#' function
+#' function or \code{pwr2n.MaxLR} function
 #' @param method a vector of text specifying the method(s). The method(s)
 #' must be one or some of c(\code{"LR"}, \code{"FH"}, \code{"Wilcoxon"},
 #'  \code{"Tarone"},\code{"Maxcombo"},\code{"Maxcross"}).  Default: c("LR")

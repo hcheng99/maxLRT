@@ -2,7 +2,7 @@
 % Please edit documentation in R/oxy-gen.wgt.R
 \name{gen.wgt}
 \alias{gen.wgt}
-\title{Weight Functions for \code{MaxLRtest}}
+\title{Weight Function Generation}
 \usage{
 gen.wgt(method = c("LR"), param, theta = 0.5)
 }
@@ -22,7 +22,7 @@ a list of weight functions
 }
 \description{
 Generate commonly used weight functions for \code{MaxLRtest}
-function
+function or \code{pwr2n.MaxLR} function
 }
 \details{
 The weight function for Fleming-Harrington (FH) test is \eqn{S(t)^\rho(1-S(t)^\gamma)}

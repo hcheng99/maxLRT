@@ -11,7 +11,7 @@ simu.trial <- function(type=c("event","time")
                        ,HR_fun #the non proportion hazard function
                        ,ratio # # of trt/# of placebo
                        ,upInt=100
-                       ,print=TRUE
+                       ,summary=TRUE
 ){
 
   if (length(trial_param) !=3) {stop("The trial parameters must include
@@ -58,8 +58,8 @@ simu.trial <- function(type=c("event","time")
   #* Simulate drop-out Time
   #****************************
   if (missing(drop_param0)&missing(drop_param1)){
-    warning("No drop-out parameters are provided. Drop-out is not considered
-            in the simulation.")
+    cat("Notes: Drop-outs are not considered in the simulation.")
+
   }else if (missing(drop_param0)){
     drop_param0 <- drop_param1
   }else if (missing(drop_param1)){
@@ -135,15 +135,14 @@ simu.trial <- function(type=c("event","time")
   )
   )
   #table(final$group,final$cnsr.desc)
-  if (print==TRUE){
-    s0 <- paste("The specified trial type is",type,"\n")
-    s1 <- paste("The specified entry time is",t_p2,"\n")
-    s2 <- paste("The max observed time is",Dur,"\n")
-    s3 <- paste("Number of events is",sum(final$event),"\n")
-    cat(s0)
-    cat(s1)
-    cat(s2)
-    cat(s3)
+  if (summary==TRUE){
+    ctext <- c("Trial Type:", "Entry Time:", "Maximum Study Duration:",
+               "Number of Subjects:", "Number of Events:")
+    cval <- c(type,t_p2,round(Dur,digits = 2),t_p1, sum(final$event))
+    csum <- data.frame(parameter=ctext, value=cval)
+    cat("\n -------- Summary of the Simulation -------- \n")
+    print(csum)
+
   }
 
   list <- list(data=final,

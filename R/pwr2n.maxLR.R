@@ -33,7 +33,7 @@ pwr2n.maxLR<- function(entry   = 1
   haz_val <- hazR(x)*ctrlRate
   haz_point <- x*k
   ## load the transition matrix
-  load <- trans.mat(num=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
+  load <- trans.mat(numN=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
                     haz_point=haz_point,ratio=ratio,
                     transP1=transP1,transP0=transP0,k=k,
                     fup=fup,entry=entry,entry_pdf0=entry_pdf0,
@@ -202,7 +202,7 @@ plot.MaxLRpwr<- function(x,type=c("hazard","survival","dropout","event","censor"
       plot(ti,theta,cex=0.1,lty=1,col=1,xlab="Time",
            ylim=c(min(theta)*0.9,max(theta)*1.1),
            ylab="Hazard Ratio (treatment over control)",
-           main="Hazard Ratio over Time",...)
+           main="Hazard Ratio",...)
 
 
     })
@@ -213,7 +213,7 @@ plot.MaxLRpwr<- function(x,type=c("hazard","survival","dropout","event","censor"
     ymax <- max(c(datM$E_L,datM$C_L))*1.1
     with(datM,{
       plot(ti,E_L,cex=0.1,lty=1,col=1,xlab="Time",ylab="proporion of drop out",
-           ylim=c(0,ymax),main="Drop-out overtime",...)
+           ylim=c(0,ymax),main="Drop-out",...)
       graphics::lines(ti,C_L,col=2,lty=2,...)
       graphics::legend("topleft",legend=c("treatment","control"),
                        col=1:2,lty=1:2,cex=0.8)
@@ -225,7 +225,7 @@ plot.MaxLRpwr<- function(x,type=c("hazard","survival","dropout","event","censor"
     with(datM,{
       plot(ti,E_C,cex=0.1,lty=1,col=1,xlab="Time",
            ylab="proporion of censor",
-           ylim=c(0,ymax),main="Administrative censoring overtime",...)
+           ylim=c(0,ymax),main="Administrative censoring",...)
       graphics::lines(ti,C_C,col=2,lty=2,...)
       graphics::legend("topleft",legend=c("treatment","control"),
                        col=1:2,lty=1:2,cex=0.8)

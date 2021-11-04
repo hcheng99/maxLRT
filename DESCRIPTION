@@ -1,4 +1,4 @@
-Package: nphSize
+Package: nphPower
 Title: Sample Size Calculation under Non-proportional Hazards
 Version: 0.1.0.9000
 Authors@R: 
@@ -24,7 +24,7 @@ Suggests:
     knitr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-URL: https://github.com/hcheng99/nphSize
+URL: https://github.com/hcheng99/nphPower
 Depends: 
     R (>= 2.10)
 VignetteBuilder: knitr

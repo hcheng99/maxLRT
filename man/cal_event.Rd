@@ -2,38 +2,41 @@
 % Please edit documentation in R/oxy-pwr2n.LR.R
 \name{cal_event}
 \alias{cal_event}
-\title{FUNCTION_TITLE}
+\title{Event Rate Calculation}
 \usage{
 cal_event(ratio, lambda1, lambda0, entry, fup, l_shape, l_scale)
 }
 \arguments{
-\item{ratio}{PARAM_DESCRIPTION}
+\item{ratio}{allocation ratio}
 
-\item{lambda1}{PARAM_DESCRIPTION}
+\item{lambda1}{hazard rate for treatment group}
 
-\item{lambda0}{PARAM_DESCRIPTION}
+\item{lambda0}{hazard rate for control group}
 
-\item{entry}{PARAM_DESCRIPTION}
+\item{entry}{enrollment period time}
 
-\item{fup}{PARAM_DESCRIPTION}
+\item{fup}{follow-up period time}
 
-\item{l_shape}{PARAM_DESCRIPTION}
+\item{l_shape}{shape parameter of weibull distribution for drop-out}
 
-\item{l_scale}{PARAM_DESCRIPTION}
+\item{l_scale}{scale parameter of weibull distribution for drop-out}
 }
 \value{
-OUTPUT_DESCRIPTION
+the event rate at the end of study
 }
 \description{
-FUNCTION_DESCRIPTION
+Calculate the event rate given the hazards and drop-out
+distribution parameters
 }
 \details{
-DETAILS
+The event rate is calculated based on the following assumptions: 1)
+patients are uniformly enrolled within \code{entry} time; 2) survival
+times for treatment and control are from exponential distribution; 3)
+the drop-out times for treatment and control follow the weibull distribution.
+The final rate is obtained via numeric integration.
 }
 \examples{
 \dontrun{
-if(interactive()){
- #EXAMPLE1
- }
+cal_event(1,0.1,0.2,5,5,0.5,30)
 }
 }

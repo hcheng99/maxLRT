@@ -10,6 +10,8 @@
 #' @param tit a vector specifying the titles of each graph, Default: c("Hazard Function", "Survival Function")
 #' @param pos a graphic parameter in the form of c(nr,nc). Subsequent
 #' figures will be drawn in an nr-by-nc array, Default: c(1, 2)
+#' @param hlegend.loc a text indicating the position of legend
+#' for the hazard plot. Default: "bottomleft"
 #' @return
 #' graphic display of hazard and survival functions
 #' @examples

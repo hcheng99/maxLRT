@@ -28,6 +28,9 @@ parameter of the \code{bsl_dist} distribution, Default: c(1.2, 0.03)}
 
 \item{pos}{a graphic parameter in the form of c(nr,nc). Subsequent
 figures will be drawn in an nr-by-nc array, Default: c(1, 2)}
+
+\item{hlegend.loc}{a text indicating the position of legend
+for the hazard plot. Default: "bottomleft"}
 }
 \value{
 graphic display of hazard and survival functions

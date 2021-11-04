@@ -1,41 +1,118 @@
 
 
 ###input parameters
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param entry PARAM_DESCRIPTION, Default: 1
-#' @param fup PARAM_DESCRIPTION, Default: 1
-#' @param CtrlHaz PARAM_DESCRIPTION
-#' @param hazR PARAM_DESCRIPTION
-#' @param transP1 PARAM_DESCRIPTION, Default: c(0, 0)
-#' @param transP0 PARAM_DESCRIPTION, Default: c(0, 0)
-#' @param Wlist PARAM_DESCRIPTION, Default: list(function(x) {
-#'    x^0
-#'})
-#' @param entry_pdf0 PARAM_DESCRIPTION, Default: function(x) {
+#' @title Sample Size Calculation with Maximum Weighted Logrank Test
+#'
+#' @description \code{pwr2n.maxLR} calculates the number of events and
+#' subjects required to achieve pre-specified power in the setup of two groups.
+#' The method extends the calculation in the framework of the Markov model by Lakatos, allowing
+#' for using the maximum weighted logrank tests with an arbitrary number of weight
+#' functions. If only one weight function is provided, the test is essentially
+#' the classic (weighted) logrank test.
+#'
+#' @param entry a numeric value indicating the enrollment time, Default: 1
+#' @param fup a numeric value indicating the minimum follow-up time for subjects.
+#'  , Default: 1
+#' @param CtrlHaz a function,  specifying the hazard function for control group.
+#' @param hazR a function, specifying the hazard ratio function between
+#' treatment and control group
+#' @param transP1 a numeric vector of length 2, consisting of the transition
+#' probability from
+#' receiving treatment to drop-out (drop-out rate) and
+#' from receiving treatment to receiving control (drop-in rate) per time unit.
+#' @param transP0 a numeric vector of length 2, consisting of the transition
+#' probability from
+#' receiving control to drop-out (drop-out rate) and
+#' from receiving control to receiving treatment (drop-in rate) per time unit.
+#' @param Wlist a list, consisting of weight functions applied to the test.
+#' The element of the list must be functions. Default is a list of one constant
+#' function, corresponding to the logrank test.
+#' @param entry_pdf0 a function, indicating the probability density function (pdf)
+#' of enrollment time for control group. The default assumes a uniform distribution
+#' corresponding to the constant enrollment rate.
+#' Default: function(x) {
 #'    (1/entry) * (x >= 0 & x <= entry)
 #'}
-#' @param entry_pdf1 PARAM_DESCRIPTION, Default: entry_pdf0
-#' @param ratio PARAM_DESCRIPTION, Default: 1
-#' @param alpha PARAM_DESCRIPTION, Default: 0.05
-#' @param beta PARAM_DESCRIPTION, Default: 0.1
-#' @param alternative PARAM_DESCRIPTION, Default: c("two.sided")
-#' @param criteria PARAM_DESCRIPTION, Default: 500
-#' @param k PARAM_DESCRIPTION, Default: 100
-#' @param summary PARAM_DESCRIPTION, Default: TRUE
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @param entry_pdf1 a pdf of enrollment time for treatment
+#' group. See \code{entry_pdf0}, Default: assume same pdf as control group.
+#' @param ratio an integer, indicating the randomization ratio between treatment
+#' and control group, Default: 1
+#' @param alpha type I error rate, Default: 0.05
+#' @param beta type II error rate, Default: 0.1
+#' @param alternative a character string specifying the alternative hypothesis,
+#' must be one of "\code{two.sided}", "\code{greater}","\code{less}". See details.
+#' Default: c("\code{two.sided}")
+#' @param criteria an integer indicating the maximum iteration allowed in
+#' obtaining the number of events. See details , Default: 500
+#' @param k an integer, indicating number of sub-intervals per time unit,
+#'  Default: 100
+#' @param summary a logical value, controlling whether to print the
+#' summary of calculation, Default: TRUE
+#' @return
+#' An object of class "\code{maxLRT}" with corresponding \code{plot} function.
+#' The object is a list containing the following components:
+#'  \item{eventN}{total number of events}
+#'  \item{totalN}{total number of subjects}
+#'  \item{pwr}{actual power given the number of events}
+#'  \item{prob_event}{event probability at the end of trial}
+#'  \item{L_trans}{a list, consisting of tranisition matrix at each inteval}
+#'  \item{pdat}{ a data frame including all the intermediate variables in the calculation.
+#'  see Details.}
+#'  \item{studytime}{a vector of length 2, including the entry and follow-up time as input}
+#'  \item{RandomizationRatio}{as input}
+#'  \item{eventlist}{a vector containing the number of events using each
+#'  weight function alone}
+#'  \item{inputfun}{a list containing all the input functions specified by
+#'  users}
+#' @details
+#' The detailed methods can be found in the reference papers. The number
+#' of subjects is determined by several factors, including the control hazard function,
+#' hazard ratio function, entry time distribution, follow-up time, etc.  Under proportional
+#' hazard assumption, the number of events is mainly determined by the hazard ratio besides
+#' type i/ii error rates. However, under nonproportional hazards, all the above design parameters
+#' may have an impact on the number of events.
+#' The study design assumes \code{entry} time units of
+#' enrollment and at least \code{fup} time units of follow-up. If enrollment
+#' time \code{entry} is set to zero, all subjects are enrolled simultaneously,
+#' so there is no staggered entry. Otherwise, if
+#' \code{entry} is greater than 0, administrative censoring is considered. The user-defined
+#'enrollment time function, hazard function for the control group and hazard ratio function can be either discrete or continuous.
+#'Various non-proportional hazards types are accommodated. See examples below.
+#'If multiple weight functions are provided in \code{Wlist}, a maximum weighted logrank
+#'test or combination test is implemented. An iterative procedure
+#'is used to obtain the event number based on the multivariate normal distribution.  Package
+#'\pkg{mvtnorm} is used to calculate the quantiles. Because the algorithm is slightly
+#'seed dependent, the quantiles are mean values of ten replicates.
+#'
+#'The "\code{alternative}" option supports both two-sided and one-sided test.
+#' Let \eqn{\Lambda_1} and \eqn{\Lambda_0} denote the cumulative hazard of
+#' treatment and control group. The \code{less} option tests
+#' \eqn{H_0: \Lambda_1 > \Lambda_0} against
+#' \eqn{H_a: \Lambda_1 <= \Lambda_0}. The \code{greater} option tests
+#'\eqn{H_0: \Lambda_1 < \Lambda_0} against \eqn{H_a: \Lambda_1 >= \Lambda_0}.
+#'
+#' @references
+#' Cheng, H., & He, J. (2021). A Maximum Weighted Logrank Test in Detecting
+#' Crossing Hazards. arXiv preprint arXiv:2110.03833.
+#'
+#'
+#' Cheng, H., & He, J. (2021). Sample size calculation for the maximum weighted
+#'  logrank test under non-proportional hazards (to submit)
+#' @examples
 #' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
+#' # generate a list of weight functions for maxcombot test
+#'  wmax <- gen.wgt(method = "Maxcombo" )
+#'  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
+#'  f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+#'  f_haz0 <- function(x){lmd0*x^0}
+#'  snph1 <- pwr2n.maxLR(entry = t_enrl, fup = t_fup, Wlist = wmax,
+#'                     k = 10, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
 #' }
-#' @seealso 
-#'  \code{\link[stats]{cor}},\code{\link[stats]{weighted.mean}}
-#'  \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
+#' @seealso
+#'  \code{\link{pwr2n.LR}}, \code{\link{pwr2n.prj}}
+#'  \code{\link{gen.wgt}}, \code{\link{evalfup}}
 #' @rdname pwr2n.maxLR
-#' @export 
+#' @export
 #' @importFrom stats cov2cor weighted.mean
 #' @importFrom mvtnorm qmvnorm pmvnorm
 pwr2n.maxLR<- function(entry   = 1
@@ -70,7 +147,7 @@ pwr2n.maxLR<- function(entry   = 1
   haz_val <- hazR(x)*ctrlRate
   haz_point <- x*k
   ## load the transition matrix
-  load <- trans.mat(num=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
+  load <- trans.mat(numN=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
                     haz_point=haz_point,ratio=ratio,
                     transP1=transP1,transP0=transP0,k=k,
                     fup=fup,entry=entry,entry_pdf0=entry_pdf0,
@@ -205,24 +282,42 @@ pwr2n.maxLR<- function(entry   = 1
 #*********************************************
 #*show the survival plot/ hazards plots
 #*********************************************
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param x PARAM_DESCRIPTION
-#' @param type PARAM_DESCRIPTION, Default: c("hazard", "survival", "dropout", "event", "censor")
-#' @param ... PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
+#' @title Graphical Display of Design Parameters in Sample Size Calculation
+#' @description Displays graphs of survival, hazards, drop-out and censor over time
+#' as specified in the calculation.
+#' @param x object of the \code{pwr2n.maxLR} function
+#' @param type a vector of string, specifying the graphs to display. The options
+#' include "\code{hazard}","\code{survival}","\code{dropout}","\code{event}", and
+#' "\code{censor}". If \code{type} is not provided, all the available graphs are
+#' generated.
+#' @param ... additional graphical arguments passed to the plot function
+#' @return
+#' plots are produced on the current graphics device
+#' @details
+#'The \code{type} argument provides five options to visualize the trial in design.
+#'Option \code{survival} shows the survival probabilities of treatment and control
+#'group over time. \code{hazard} option provides the hazard rates and hazard ratio
+#'over time.\code{dropout} shows the proportion of drop-out subjects across the trial duration.
+#'\code{censor} shows the proportion of censored subjects over time.
+#' @examples
 #' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
+#' # generate a list of weight functions for maxcombo test
+#'  wmax <- gen.wgt(method = "Maxcombo" )
+#'  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
+#'  f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+#'  f_haz0 <- function(x){lmd0*x^0}
+#'  snph1 <- pwr2n.maxLR(entry = t_enrl, fup = t_fup, Wlist = wmax,
+#'                     k = 10, ratio = 2, CtrlHaz = f_haz0,
+#'                     hazR = f_hr_delay)
+#'  # display the hazards plot only
+#'  plot(snph1, type="hazard")
+#'  # display all plots
+#'  plot(snph1)
 #' }
-#' @seealso 
-#'  \code{\link[graphics]{lines}},\code{\link[graphics]{legend}}
+#' @seealso
+#'  \code{\link[nphPower]{pwr2n.maxLR}}
 #' @rdname plot.MaxLRpwr
-#' @export 
-#' @importFrom graphics lines legend
+#' @export
 plot.MaxLRpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),...) {
   datM <- x$pdat
   totalN <- x$totalN
