@@ -29,7 +29,7 @@ pwr2n.prj<-function(entry   = 1
   haz_val <- hazR(x)*ctrlRate
   haz_point <- x*k
   ## load the transition matrix
-  load <- trans.mat(num=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
+  load <- trans.mat(numT=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
                     haz_point=haz_point,ratio=ratio,
                     transP1=transP1,transP0=transP0,k=k,
                     fup=fup,entry=entry,entry_pdf0=entry_pdf0,
@@ -75,10 +75,6 @@ pwr2n.prj<-function(entry   = 1
     ## get the noncentral parameter
     lmd <- t(mu)%*%MASS::ginv(Vmat)%*%mu
     power <- stats::pchisq(crit,df=vr,ncp=lmd,lower.tail = FALSE)
-
-  print(c(vr,crit,lmd,power))
-
-   print(dnum)
     if (power<1-beta&count<criteria) {dnum<-dnum+1}
     else if (count>=criteria){
       warning(paste0("the algoritm doesn't converge within ",criteria," iterations;

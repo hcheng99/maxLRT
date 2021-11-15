@@ -1,7 +1,7 @@
 gen.wgt <- function(method=c("LR")
                     , param
-                    , theta =0.5)
-  {
+                    , theta=0.5 )
+{
 
   if (missing(method)){stop("method must be specified.")}
   if (sum(method=="FH")>1){stop("one FH method a time.")}
@@ -47,7 +47,7 @@ gen.wgt <- function(method=c("LR")
         f01=function(x){x},
         f10=function(x){1-x},
         fcross=function(x,pp=theta){
-            (x<=pp)*(-1/pp*x+1)+(x>pp)*(-1/(1-pp)*(x-pp))}
+          (x<=pp)*(1/pp*x-1)+(x>pp)*(1/(1-pp)*(x-pp))}
       ))
 
     }
@@ -56,6 +56,6 @@ gen.wgt <- function(method=c("LR")
 
   }
 
- return(lst)
+  return(lst)
 
 }

@@ -21,7 +21,7 @@
 #' @param HR_fun a function describing the hazard ratio function between treatment
 #' and control group
 #' @param ratio allocation ratio between treatment and control group.
-#' For example, \code{allocation_ratio}=2 if 2:1 allocation is used.
+#' For example, \code{ratio}=2 if 2:1 allocation is used.
 #' @param upInt a value indicating the upper bound used in the \code{uniroot} function.
 #' See details.  Default: 100
 #' @param summary a logical indicating whether basic information summary is printed

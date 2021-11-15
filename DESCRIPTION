@@ -7,7 +7,14 @@ Authors@R:
            role = c("aut", "cre"),
            email = "hcheng1118@Hotmail.com",
            comment = c(ORCID = "0000-0002-2552-7656"))
-Description: performs combination tests and sample size calculation for fixed design with survival endpoints.
+Description: performs combination tests and sample size calculation for 
+   fixed design with survival endpoints using combination tests under either
+   proportional hazards or nonproportional hazards. The combination tests 
+   include maximum weighted logrank test and projection test. The sample 
+   size calculation procedure is very flexibile, allowing for user-defined
+   hazard ratio function and considering various trial conditions like 
+   staggered enry, drop-out etc. Trial simulation function is also provided 
+   to faciliate the empirical power calculation. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

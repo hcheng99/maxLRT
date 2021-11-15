@@ -22,7 +22,10 @@ cal_event(ratio, lambda1, lambda0, entry, fup, l_shape, l_scale)
 \item{l_scale}{scale parameter of weibull distribution for drop-out}
 }
 \value{
-the event rate at the end of study
+a list of components:
+\item{ep1}{event rate for treatment group}
+\item{ep0}{event rate for control group}
+\item{ep}{mean event rate weithed by the randomization ratio}
 }
 \description{
 Calculate the event rate given the hazards and drop-out
@@ -33,10 +36,28 @@ The event rate is calculated based on the following assumptions: 1)
 patients are uniformly enrolled within \code{entry} time; 2) survival
 times for treatment and control are from exponential distribution; 3)
 the drop-out times for treatment and control follow the weibull distribution.
-The final rate is obtained via numeric integration.
+The final rate is obtained via numeric integration:
+
+\deqn{
+P=\int_{t_{fup}}^{t_{enrl}+t_{fup}} \Big \{
+\int_0^{t}r(u)exp\big [-\int_0^u[r(x)+l(x)]dx \big]d(u) \Big \}
+\frac{1}{t_{enrl}} dt
+}
+where \eqn{r(x)} is the hazard of event and \eqn{l(x)} is the hazard
+of drop-out; \eqn{t_{enrl}} is the entry time and \eqn{t_{fup}} is the
+follow-up duration.
 }
 \examples{
 \dontrun{
-cal_event(1,0.1,0.2,5,5,0.5,30)
+# median surival time for treatment and control :
+16 months vs 12  months
+# entry time: 12 months ; follow-up time: 18 months
+# the shape parmater for weibull drop-out : 0.5
+# median time for drop-out : 48 =>
+scale parameter: 48/log(2)^(1/0.5)=100
+RR <- 1; l1 <- log(2)/16; l0 <- log(2)/12
+t_enrl <- 12; t_fup <- 18
+
+cal_event(1,l1,l0,t_enrl,t_fup,0.5,100)
 }
 }

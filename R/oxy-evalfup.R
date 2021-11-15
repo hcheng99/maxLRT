@@ -3,9 +3,9 @@
 ###################
 #' @title Visualization of the Relationship between Follow-up and Sample Size
 #' @description \code{evalfup} function displays the graph showing the relationship
-#' between the follow-up time and the total sample size required to achieve the the
-#' same power
-#' @param object returned object by function \code{pwr2n.maxLR}
+#' between the follow-up time and the total sample size/event number required to
+#' achieve the the same power
+#' @param object returned object by function \code{pwr2n.NPH}
 #' @param lower.time a numeric value specifying the shortest duration time
 #' @param upper.time a numeric value specifying the longest duration time
 #' @param size an integer specifying the planned total sample size
@@ -16,9 +16,9 @@
 #' @param title a text for title in the plot: 'Relationship between Follow-up and
 #' Total Sample Size'
 #' @return
-#' a graph shows the relationship and a list of components:
+#' a graph showing the relationship and a list of components:
 #' \item{approx.time}{approximate follow-up time corresponding to specified sample size
-#' reaching the same target power }
+#' to reach the same target power }
 #' \item{original}{a list with elements of \code{x} and \code{y}. Vector \code{x} contains
 #' the follow-up duration and vector \code{y} contains the corresponding sample
 #' size}
@@ -28,15 +28,15 @@
 #' @details
 #' The \code{evalfun} function helps to evaluate the relationship between
 #' sample size/event number and follow-up duration. It retrieves the trial
-#' design information for the \code{object} returned by \code{pwr2n.maxLR}
+#' design information for the \code{object} returned by \code{pwr2n.NPH}
 #' function. A sequence of follow-up times starting from \code{lower.time}
 #' and ending with \code{upper.time} are generated. The number of subjects and
-#' number of events required for achieving the specified power in \code{ojbect}
+#' number of events required for achieving the specified power in \code{object}
 #' are calculated at each time points. An interpolation function \code{approx}
-#' function from \pkg{stats} is applied to smooth the curves. In case of
+#' from \pkg{stats} is applied to smooth the curves. In case of
 #' proportional hazards, the follow-up duration has little impact on the
 #' event number except for variations from numeric approximation, while in
-#' case of nonproportional hazards, the follow-up  imposes an important impact
+#' case of nonproportional hazards, the follow-up time imposes an important impact
 #' on both the total sample size and event number.
 #' @examples
 #' \dontrun{
@@ -45,7 +45,7 @@
 #' #define hazard ratio function
 #' f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
 #' # perform sample size calculation
-#' snph1 <- pwr2n.maxLR(entry = t_enrl, fup = t_fup, Wlist = wlr,
+#' snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wlr,
 #'                     k = 100, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay
 #' )
 #' # draw the graph
@@ -67,7 +67,7 @@ evalfup <- function(object, lower.time, upper.time, size,
   D <- c()
   for (i in 1: length(fupseq)){
     #print(fupseq[i])
-    tmp <- pwr2n.maxLR(entry     = object$studytime[1]
+    tmp <- pwr2n.NPH(entry     = object$studytime[1]
                        ,fup      = fupseq[i]
                        ,k        = object$inputfun$k
                        ,ratio    = object$RandomizationRatio

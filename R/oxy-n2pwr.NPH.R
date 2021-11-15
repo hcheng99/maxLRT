@@ -1,7 +1,11 @@
 ###input parameters
 #' @title Power Calculation with Maximum Weighted Logrank Test
-#' @description  \code{n2pwr.maxLR} calcualtes the power given either the
+#' @description  \code{n2pwr.NPH} calculates the power given either the
 #' number of events or number of subjects
+#' @param method a text specifying the calculation method, either
+#' \code{"MaxLR"} or \code{"Projection"}. Maximum weighted
+#' logrank test is used if \code{"MaxLR"} is specified; otherwise,
+#' projection test is used.
 #' @param entry a numeric value indicating the enrollment time, Default: 1
 #' @param fup a numeric value indicating the minimum follow-up time for subjects.
 #'  , Default: 1
@@ -25,7 +29,7 @@
 #' Default: function(x) {
 #'    (1/entry) * (x >= 0 & x <= entry)
 #'}
-#' @param entry_pdf1 a pdf of enrollment time for treatment
+#' @param entry_pdf1 a pdf functionof enrollment time for treatment
 #' @param eventN the number of events
 #' @param totalN the number of subjects
 #' @param ratio allocation ratio, Default: 1
@@ -58,20 +62,21 @@
 #'  t_enrl <- 12
 #'t_fup <- 18
 #'lmd0 <- -log(0.2)/10
+#'#delayed treatment effects
 #'f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
 #'ss <- 1
 #'ratio <-1
 #'alpha <- 0.05
 #'beta <- 0.1
 #'maxc <- gen.wgt(method="Maxcombo")
-#'pwr1 <- n2pwr.maxLR(entry   = t_enrl
+#'pwr1 <- n2pwr.NPH(entry   = t_enrl
 #'                    ,fup      = t_fup
 #'                  ,CtrlHaz = function(x){x^0*lmd0}
 #'                  ,hazR = f_hr_delay
 #'                  ,transP1 = c(0,0)
 #'                  ,transP0 = c(0,0)
 #'                  ,Wlist = maxc
-#'                  ,eventN = 50
+#'                  ,eventN = 50 # targeted number of events
 #'                  ,ratio    = 1
 #'                  ,alpha    = 0.05
 #'                  ,alternative=c("two.sided")
@@ -81,12 +86,12 @@
 #'  }
 #' }
 #' @seealso
-#'  \code{\link[maxLRT]{pwr2n.maxLR}}
-#'  \code{\link[mvtnorm]{qmvnorm}},\code{\link[mvtnorm]{pmvnorm}}
-#' @rdname n2pwr.maxLR
+#'  \code{\link{pwr2n.NPH}}
+#' @rdname n2pwr.NPH
 #' @export
 #' @importFrom mvtnorm qmvnorm pmvnorm
-n2pwr.maxLR<- function(entry   = 1
+n2pwr.NPH<- function(method = "MaxLR"
+                       ,entry   = 1
                        ,fup      = 1
                        ,CtrlHaz
                        ,hazR
@@ -114,7 +119,7 @@ n2pwr.maxLR<- function(entry   = 1
   haz_val <- hazR(x)*ctrlRate
   haz_point <- x*k
   ## load the transition matrix
-  load <- trans.mat(num=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
+  load <- trans.mat(numN=num,x=x,ctrlRate=ctrlRate,haz_val=haz_val,
                     haz_point=haz_point,ratio=ratio,
                     transP1=transP1,transP0=transP0,k=k,
                     fup=fup,entry=entry,entry_pdf0=entry_pdf0,
@@ -138,33 +143,48 @@ n2pwr.maxLR<- function(entry   = 1
       Vmat[k1,k2] <-  dnum*t(W[,k1]*W[,k2]) %*%(pdat$rho*pdat$eta)
     }
   }
-  rho_est <- stats::cov2cor(Vmat)
-  mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))/sqrt(diag(Vmat))
-  if (alternative=="two.sided"){
-    ftwo <- function(i){
-      crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
-                               mean=rep(0,wn),sigma = rho_est)$quantile
-      power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
-      return(c(crit,power))
+  if (method == "MaxLR"){
+    rho_est <- stats::cov2cor(Vmat)
+    mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))/sqrt(diag(Vmat))
+    if (alternative=="two.sided"){
+      ftwo <- function(i){
+        crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
+                                 mean=rep(0,wn),sigma = rho_est)$quantile
+        power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
+        return(c(crit,power))
+      }
+      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+      power <- ftwod[2]
+    }else if (alternative=="less"){ # l1 <l0
+      ftwo <- function(i){
+        crit <- mvtnorm::qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+        power <- 1-mvtnorm::pmvnorm(crit,Inf,mean=mu,sigma = rho_est)[1]
+        return(c(crit,power))
+      }
+      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+      crit <- ftwod[1];  power <- ftwod[2]
+    }else if (alternative=="greater"){
+      ftwo <- function(i){
+        crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+        power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)[1]
+        return(c(crit,power))
+      }
+      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+      crit <- ftwod[1];  power <- ftwod[2]
     }
-    ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-    power <- ftwod[2]
-  }else if (alternative=="less"){ # l1 <l0
-    ftwo <- function(i){
-      crit <- mvtnorm::qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
-      power <- 1-mvtnorm::pmvnorm(crit,Inf,mean=mu,sigma = rho_est)[1]
-      return(c(crit,power))
+  }
+  else if (method == "Projection"){
+    if (alternative!="two.sided"){
+      cat(c("note: only two-sided is supported for projection test."))
     }
-    ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-    crit <- ftwod[1];  power <- ftwod[2]
-  }else if (alternative=="greater"){
-    ftwo <- function(i){
-      crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
-      power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)[1]
-      return(c(crit,power))
-    }
-    ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-    crit <- ftwod[1];  power <- ftwod[2]
+    ## get the rank of the variance matrix
+    mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))
+    vr <- qr(Vmat)$rank
+    crit <- stats::qchisq(1-alpha,df=vr)
+    ## get the noncentral parameter
+    lmd <- t(mu)%*%MASS::ginv(Vmat)%*%mu
+    power <- stats::pchisq(crit,df=vr,ncp=lmd,lower.tail = FALSE)
+
   }
 
 

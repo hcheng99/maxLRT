@@ -16,26 +16,27 @@
 #' weight functions and the variance-covariance matrix}
 #' @details
 #' The base functions are the same as those described in function
-#' \code{MaxLRtest}.
+#' \code{MaxLRtest}. The method detail can be found in Brendel (2014)
+#' paper. The main idea is to map the multiple weighted logrank statistics
+#' into a chi-square distribution. The degree freedom of the chi-square
+#' is the rank of the generalized inverse of covariance matrix.
 #' @references
 #' Brendel, M., Janssen, A., Mayer, C. D., & Pauly, M. (2014). Weighted logrank
 #' permutation tests for randomly right censored life science
 #' data. Scandinavian Journal of Statistics, 41(3), 742-761.
 #' @examples
 #' \dontrun{
-#' if(interactive()){
 #' lung <- maxLRT::lung
 #' tmpd <- with(lung, data.frame(time=SurvTime,stat=1-censor,grp=Treatment))
+#' # two weight functions are defined.
+#' # one is constant weight; the other emphasize diverging hazards
 #' timef1 <- function(x){1}
 #' timef2 <- function(x){(x)}
 #' test1 <- projection.test(tmpd,list(timef1,timef2),base="KM")
-#' test1$chisq; test1$pvalue;test1$df.chisq
-#'  }
+#' test1$chisq; test1$pvalue; test1$df.chisq
 #' }
 #' @seealso
-#'  \code{\link[survival]{survfit}}
-#'  \code{\link[stats]{stepfun}},\code{\link[stats]{Chisquare}}
-#'  \code{\link[MASS]{ginv}}
+#'  \code{\link{MaxLRtest}}
 #' @rdname projection.test
 #' @export
 #' @importFrom survival survfit

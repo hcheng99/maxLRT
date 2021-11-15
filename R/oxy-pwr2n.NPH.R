@@ -3,13 +3,16 @@
 ###input parameters
 #' @title Sample Size Calculation with Maximum Weighted Logrank Test
 #'
-#' @description \code{pwr2n.maxLR} calculates the number of events and
+#' @description \code{pwr2n.NPH} calculates the number of events and
 #' subjects required to achieve pre-specified power in the setup of two groups.
 #' The method extends the calculation in the framework of the Markov model by Lakatos, allowing
 #' for using the maximum weighted logrank tests with an arbitrary number of weight
 #' functions. If only one weight function is provided, the test is essentially
 #' the classic (weighted) logrank test.
-#'
+#' @param method a text specifying the calculation method, either
+#' \code{"MaxLR"} or \code{"Projection"}. Maximum weighted
+#' logrank test is used if \code{"MaxLR"} is specified; otherwise,
+#' projection test is used.
 #' @param entry a numeric value indicating the enrollment time, Default: 1
 #' @param fup a numeric value indicating the minimum follow-up time for subjects.
 #'  , Default: 1
@@ -41,7 +44,8 @@
 #' @param beta type II error rate, Default: 0.1
 #' @param alternative a character string specifying the alternative hypothesis,
 #' must be one of "\code{two.sided}", "\code{greater}","\code{less}". See details.
-#' Default: c("\code{two.sided}")
+#' For \code{"Projection"} method, only \code{"two-sided"}
+#' alternative is supported. Default: c("\code{two.sided}")
 #' @param criteria an integer indicating the maximum iteration allowed in
 #' obtaining the number of events. See details , Default: 500
 #' @param k an integer, indicating number of sub-intervals per time unit,
@@ -49,7 +53,7 @@
 #' @param summary a logical value, controlling whether to print the
 #' summary of calculation, Default: TRUE
 #' @return
-#' An object of class "\code{maxLRT}" with corresponding \code{plot} function.
+#' An object of class "\code{NPHpwr}" with corresponding \code{plot} function.
 #' The object is a list containing the following components:
 #'  \item{eventN}{total number of events}
 #'  \item{totalN}{total number of subjects}
@@ -100,37 +104,56 @@
 #'  logrank test under non-proportional hazards (to submit)
 #' @examples
 #' \dontrun{
-#' # generate a list of weight functions for maxcombot test
+#'  ## generate a list of weight functions for maxcombot test
 #'  wmax <- gen.wgt(method = "Maxcombo" )
 #'  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
+#'  ## delayed treatment effects
 #'  f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
 #'  f_haz0 <- function(x){lmd0*x^0}
-#'  snph1 <- pwr2n.maxLR(entry = t_enrl, fup = t_fup, Wlist = wmax,
+#'  snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
 #'                     k = 10, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
+#'
+#'  #proportional hazards with weibull survival for control group
+#'  #logrank test
+#'  wlr <- gen.wgt(method = "LR" )
+#'  b0 <- 3
+#' th0 <- 10/(-log(0.2))^(1/b0)
+#' #Weibull hazard function
+#' f_hz_weibull <- function(x){b0/th0^b0*x^(b0-1)}
+#' #hazard ratio function
+#' f_hr <- function(x){0.5*x^0}
+#' # define entry and follow-up time
+#' t_enrl <- 5; t_fup <- 5
+#' exph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, k = 100, Wlist = wlr,
+#'    CtrlHaz = f_hz_weibull, hazR = f_hr, summary = FALSE)
+#'
 #' }
 #' @seealso
-#'  \code{\link{pwr2n.LR}}, \code{\link{pwr2n.prj}}
+#'  \code{\link{pwr2n.LR}}
 #'  \code{\link{gen.wgt}}, \code{\link{evalfup}}
-#' @rdname pwr2n.maxLR
+#' @rdname pwr2n.NPH
 #' @export
 #' @importFrom stats cov2cor weighted.mean
 #' @importFrom mvtnorm qmvnorm pmvnorm
-pwr2n.maxLR<- function(entry   = 1
-                       ,fup      = 1
-                       ,CtrlHaz
-                       ,hazR
-                       ,transP1 = c(0, 0)
-                       ,transP0 = c(0, 0)
-                       ,Wlist = list(function(x){ x^0})
-                       ,entry_pdf0=function(x){(1/entry)*(x>=0&x<=entry)}
-                       ,entry_pdf1=entry_pdf0
-                       ,ratio    = 1
-                       ,alpha    = 0.05
-                       ,beta     = 0.1
-                       ,alternative = c("two.sided")
-                       ,criteria = 500
-                       ,k        = 100
-                       ,summary = TRUE
+
+###input parameters
+pwr2n.NPH<- function(method = "MaxLR"
+                     ,entry   = 1
+                     ,fup      = 1
+                     ,CtrlHaz
+                     ,hazR
+                     ,transP1 = c(0, 0)
+                     ,transP0 = c(0, 0)
+                     ,Wlist = list(function(x){ x^0})
+                     ,entry_pdf0=function(x){(1/entry)*(x>=0&x<=entry)}
+                     ,entry_pdf1=entry_pdf0
+                     ,ratio    = 1
+                     ,alpha    = 0.05
+                     ,beta     = 0.1
+                     ,alternative = c("two.sided")
+                     ,criteria = 500
+                     ,k        = 100
+                     ,summary = TRUE
 ){
 
   if (!alternative %in% c("two.sided","greater","less")){
@@ -165,7 +188,7 @@ pwr2n.maxLR<- function(entry   = 1
     part2=(qnorm(1-alpha)+qnorm(1-beta))^2
   }
   for (j in 1:wn){
-    W[,j] <- Wlist[[j]](pdat$S)
+    W[,j] <- Wlist[[j]](1-pdat$S) # to be consistent with MWLR test
     wgt <- W[,j]
     part1=t(pdat$rho)%*%(pdat$eta*wgt^2)
     part3=t(pdat$rho)%*%(pdat$gamma*wgt)
@@ -186,37 +209,52 @@ pwr2n.maxLR<- function(entry   = 1
         Vmat[k1,k2] <-  dnum*t(W[,k1]*W[,k2]) %*%(pdat$rho*pdat$eta)
       }
     }
-    rho_est <- stats::cov2cor(Vmat)
-    mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))/sqrt(diag(Vmat))
-    if (alternative=="two.sided"){
-      ftwo <- function(i){
-        #set.seed(i)
-        crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
-                                 mean=rep(0,wn),sigma = rho_est)$quantile
-        power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
-        return(c(crit,power))
+    if (method=="MaxLR"){
+      rho_est <- stats::cov2cor(Vmat)
+      mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))/sqrt(diag(Vmat))
+      if (alternative=="two.sided"){
+        ftwo <- function(i){
+          #set.seed(i)
+          crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
+                                   mean=rep(0,wn),sigma = rho_est)$quantile
+          power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
+          return(c(crit,power))
+        }
+        ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+        power <- ftwod[2]
+        crit <- ftwod[1]
+      }else if (alternative=="less"){ # l1 <l0
+        ftwo <- function(i){
+          # set.seed(i)
+          crit <- mvtnorm::qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+          power <- 1-mvtnorm::pmvnorm(crit,Inf,mean=mu,sigma = rho_est)[1]
+          return(c(crit,power))
+        }
+        ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+        crit <- ftwod[1];  power <- ftwod[2]
+      }else if (alternative=="greater"){
+        ftwo <- function(i){
+          #set.seed(i)
+          crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+          power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)[1]
+          return(c(crit,power))
+        }
+        ftwod <-  apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+        crit <- ftwod[1];  power <- ftwod[2]
       }
-      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-      power <- ftwod[2]
-      crit <- ftwod[1]
-    }else if (alternative=="less"){ # l1 <l0
-      ftwo <- function(i){
-        # set.seed(i)
-        crit <- mvtnorm::qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
-        power <- 1-mvtnorm::pmvnorm(crit,Inf,mean=mu,sigma = rho_est)[1]
-        return(c(crit,power))
+    }
+    else if (method=="Projection"){
+      if (alternative!="two.sided"){
+        cat(c("note: only two-sided is supported for projection test."))
+
       }
-      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-      crit <- ftwod[1];  power <- ftwod[2]
-    }else if (alternative=="greater"){
-      ftwo <- function(i){
-        #set.seed(i)
-        crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
-        power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)[1]
-        return(c(crit,power))
-      }
-      ftwod <-  apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-      crit <- ftwod[1];  power <- ftwod[2]
+      ## get the rank of the variance matrix
+      mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))
+      vr <- qr(Vmat)$rank
+      crit <- stats::qchisq(1-alpha,df=vr)
+      ## get the noncentral parameter
+      lmd <- t(mu)%*%MASS::ginv(Vmat)%*%mu
+      power <- stats::pchisq(crit,df=vr,ncp=lmd,lower.tail = FALSE)
     }
 
     if (power<1-beta&count<criteria) {dnum<-dnum+1}
@@ -231,22 +269,28 @@ pwr2n.maxLR<- function(entry   = 1
 
   eprob <- stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(1,ratio))
   Nsize <- dnum/eprob
+
+  inparam <- c("Method","Entry Time", "Follow-up Time",
+               "Allocation Ratio", "Type I Error", "Type II Error",
+               "Alternative","Number of Weights")
+  inval <- c(method,entry,fup,ratio, alpha, beta,
+             alternative,length(Wlist))
+  inputdata <- data.frame(parameter=inparam, value=inval)
+  outparam <- c("Number of Events", "Number of Total Sampe Size",
+                "Asymptotic Power", "Overall Event Rate")
+  outval <- c(round(c( dnum, Nsize, as.numeric(power),eprob),digits = 3))
+  outputdata <- data.frame(parameter=outparam, value=outval)
+
   if (summary==TRUE){
     cat("-----Summary of the Input Parameters----- \n")
-    inparam <- c("Entry Time", "Follow-up Time",
-                 "Allocation Ratio", "Type I Error", "Type II Error",
-                 "Alternative","Number of Weights for test")
-    inval <- c(entry,fup,ratio, alpha, beta,
-               alternative,length(Wlist))
-    inputdata <- data.frame(parameter=inparam, value=inval)
+
     print(inputdata, row.names = FALSE)
     cat("-----Summary of the Output Parameters----- \n ")
-    outparam <- c("Number of Events", "Number of Total Sampe Size",
-                  "Asymptotic Power", "Overall Event Rate")
-    outval <- round(c(dnum, Nsize, as.numeric(power),eprob),digits = 3)
-    outputdata <- data.frame(parameter=outparam, value=outval)
+
     print(outputdata, row.names = FALSE)
   }
+  summaryoutput <- list(input = inputdata, output = outputdata)
+
   inputfun <-list(
     alpha = alpha,
     beta = beta,
@@ -271,42 +315,77 @@ pwr2n.maxLR<- function(entry   = 1
                    ,RandomizationRatio=ratio
                    ,eventList = event
                    ,inputfun = inputfun
+                   ,summaryout = summaryoutput
 
   )
-  class(listall) <-"MaxLRpwr"
+  class(listall) <-"NPHpwr"
   return(listall)
 
 
+}
+#' @title Summary of the \code{pwr2n.NPH} function
+#' @description Summarize the results of \code{pwr2n.NPH} function
+#' @param object object of the \code{pwr2n.NPH} function
+#' @seealso
+#'  \code{\link{pwr2n.NPH}}
+#' @rdname summary.NPHpwr
+#' @export
+summary.NPHpwr <- function(object){
+   summary <- object$summaryout
+   wl  <- lapply(object$inputfun$Weightfunctions,deparse)
+   wlc <- paste0(noquote(unlist(noquote(lapply(wl,"[",3)))),collapse=";")
+   wlc <- gsub("\\s","",wlc)
+   input <- data.frame(Parameter = c(summary$input$parameter,"Weight Functions"),
+                       Value = c(summary$input$value, wlc))
+
+   output <- summary$output
+   names(input) <- c("__Parameter__", "__Value__")
+   names(output) <- c("__Parameter__", "__Value__")
+   cat("------------------------------------------ \n ")
+  cat("----Summary of the Input Parameters---- \n")
+  cat("------------------------------------------ \n ")
+
+  print(input, row.names = FALSE, right=FALSE, justify = "left")
+  cat("------------------------------------------ \n ")
+  cat("-----Summary of the Output Parameters----- \n ")
+  cat("------------------------------------------ \n ")
+  print(output, row.names = FALSE, right=FALSE, , justify = "left")
+  cat("------------------------------------------ \n ")
+  cat("Notes: the base (x) of weight function is \n K-M estimate of CDF ")
 }
 
 #*********************************************
 #*show the survival plot/ hazards plots
 #*********************************************
-#' @title Graphical Display of Design Parameters in Sample Size Calculation
+#' @title Graphical Display of Design Parameters in Sample Size
+#' Calculation
 #' @description Displays graphs of survival, hazards, drop-out and censor over time
 #' as specified in the calculation.
-#' @param x object of the \code{pwr2n.maxLR} function
+#' @param object object of the \code{pwr2n.NPH} function
 #' @param type a vector of string, specifying the graphs to display. The options
-#' include "\code{hazard}","\code{survival}","\code{dropout}","\code{event}", and
-#' "\code{censor}". If \code{type} is not provided, all the available graphs are
+#' include "\code{hazard}", "\code{survival}", "\code{dropout}",
+#'  "\code{event}", and
+#'  "\code{censor}". If \code{type} is not provided, all the available graphs are
 #' generated.
 #' @param ... additional graphical arguments passed to the plot function
 #' @return
 #' plots are produced on the current graphics device
 #' @details
-#'The \code{type} argument provides five options to visualize the trial in design.
-#'Option \code{survival} shows the survival probabilities of treatment and control
-#'group over time. \code{hazard} option provides the hazard rates and hazard ratio
-#'over time.\code{dropout} shows the proportion of drop-out subjects across the trial duration.
-#'\code{censor} shows the proportion of censored subjects over time.
+#' The \code{type} argument provides five options to visualize the trial in design.
+#' Option \code{survival} shows the survival probabilities of treatment and control
+#' group over time. option \code{hazard} provides the hazard rates and hazard ratio
+#' over time.option \code{dropout} shows the proportion of drop-out subjects across
+#' the trial duration.
+#' option \code{censor} shows the proportion of censored subjects over time.
 #' @examples
 #' \dontrun{
 #' # generate a list of weight functions for maxcombo test
 #'  wmax <- gen.wgt(method = "Maxcombo" )
 #'  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
+#'  # delayed treatment effects, the crossign point is at 6.
 #'  f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
 #'  f_haz0 <- function(x){lmd0*x^0}
-#'  snph1 <- pwr2n.maxLR(entry = t_enrl, fup = t_fup, Wlist = wmax,
+#'  snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
 #'                     k = 10, ratio = 2, CtrlHaz = f_haz0,
 #'                     hazR = f_hr_delay)
 #'  # display the hazards plot only
@@ -315,13 +394,13 @@ pwr2n.maxLR<- function(entry   = 1
 #'  plot(snph1)
 #' }
 #' @seealso
-#'  \code{\link[nphPower]{pwr2n.maxLR}}
-#' @rdname plot.MaxLRpwr
+#'  \code{\link{pwr2n.NPH}}
+#' @rdname plot.NPHpwr
 #' @export
-plot.MaxLRpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),...) {
-  datM <- x$pdat
-  totalN <- x$totalN
-  ratio <- x$RandomizationRatio
+plot.NPHpwr<- function(object,type=c("hazard","survival","dropout","event","censor"),...) {
+  datM <- object$pdat
+  totalN <- object$totalN
+  ratio <- object$RandomizationRatio
   tval <-1
   if( missing(type)){ tval <- 0}
   ## draw the survival curves

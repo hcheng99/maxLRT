@@ -47,7 +47,7 @@ weibull distribution of drop-out time for treatment group}
 and control group}
 
 \item{ratio}{allocation ratio between treatment and control group.
-For example, \code{allocation_ratio}=2 if 2:1 allocation is used.}
+For example, \code{ratio}=2 if 2:1 allocation is used.}
 
 \item{upInt}{a value indicating the upper bound used in the \code{uniroot} function.
 See details.  Default: 100}

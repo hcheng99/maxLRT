@@ -16,23 +16,31 @@
 #'  Default: 0.1
 #' @param alternative a value must be one of ("two.sided", "one.sided"), indicating
 #' whether a two-sided or one-sided test to use.  Default: c("two.sided")
-#' @param Lparam a vector of parameters for the drop-out Weibull distribution,
+#' @param Lparam a vector of shape and scale parameters for the drop-out Weibull distribution,
 #'  See Details below. Default: NULL
 #' @param summary a logical controlling whether a brief summary is printed or not
 #' , Default: TRUE
 #' @return
 #' \item{eventN}{The total number of events}
 #' \item{totalN}{The total number of subjects}
+#' \item{summary}{a list containing the input parameters and output results}
 #' @aliases phsize
-#' @details The total event number is determined only by \eqn{\alpha, \beta} and
+#' @details
+#'  Both Schoenfeld's formula and Freedman's formula are  included in
+#'  function \code{pwr2n.LR}
+#'  The total event number is determined by \eqn{\alpha, \beta} and
 #'  hazard ratio, i.e., \eqn{\lambda_1/\lambda_0}. Other design parameters such as
 #'  enrollment period affects the event probability and thus the total sample size.
-#'  A fixed duration design is assumed in the calculation. ALl patients are enrolled
+#'  A fixed duration design is assumed in the calculation. All patients are enrolled
 #'  at a constant rate within \code{entry} time and have at least \code{fup}
 #'  time of follow-up. So the total study duration is \code{entry}+\code{fup}.
 #'  If drop-out is expected, a Weibull distribution with shape parameter -\eqn{\alpha}
-#'  and scale parameter - \eqn{\beta} is considered. The CDF is
-#'  \eqn{F(x)=1-exp(-(x/\beta)^\alpha)}.
+#'  and scale parameter - \eqn{\beta} is considered. The CDF of Weibull is
+#'  \eqn{F(x)=1-exp(-(x/\beta)^\alpha)}, where \eqn{\alpha} is the shape
+#'  parameter and \eqn{\beta} is the scale parameter. The event rate
+#'  is calculated through numeric integration. See more details in
+#'  \code{\link{cal_event}}.
+#'
 #' @references
 #' Schoenfeld, D. (1981) The asymptotic properties of nonparametric
 #'  tests for comparing survival distributions. Biometrika, 68,
@@ -71,8 +79,8 @@
 #' c(eg2$eventN,eg2$totalN,eg2$eventN/eg2$totalN)
 #' }
 #' @seealso
-#'  \code{\link{pwr2n.maxLR}}, \code{\link{pwr2n.prj}},
-#'  \code{\link{evalfup}}
+#'  \code{\link{pwr2n.NPH}},
+#'  \code{\link{evalfup}}, \code{\link{cal_event}}
 #' @rdname pwr2n.LR
 #' @export
 #' @importFrom stats integrate weighted.mean qnorm
@@ -157,28 +165,36 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
   }
 
   N=Dnum /erate
+  inparam <- c("Method", "Lambda1/Lambda0/HR","Entry Time", "Follow-up Time",
+               "Allocation Ratio", "Type I Error", "Type II Error",
+               "Alternative","Drop-out Parameter")
+  if (is.null(Lparam)) {Lparam <- "Not Provided"
+  }else {Lparam <- round(Lparam, digits = 3)}
 
+  inval <- c(method, paste0(round(lambda1,digits=3),"/",round(lambda0,digits=3), "/",
+                            round(lambda1/lambda0,digits=3)),
+             entry, fup,ratio, alpha, beta,
+             alternative,paste0(Lparam,collapse = ","))
+  inputdata <- data.frame(parameter=inparam, value=inval)
+  outparam <- c("Number of Events", "Number of Total Sampe Size",
+                "Overall Event Rate")
+  outval <- round(c(Dnum, N, Dnum/N),digits=3)
+  outputdata <- data.frame(parameter=outparam, value=outval)
+  summaryout <- list(input=inputdata,output=outputdata)
   if(summary ==TRUE){
+    cat("------------------------------------------ \n ")
     cat("-----Summary of the Input Parameters----- \n")
-    inparam <- c("Method", "Lambda1/Lambda0/HR","Entry Time", "Follow-up Time",
-                 "Allocation Ratio", "Type I Error", "Type II Error",
-                 "Alternative","Drop-out Parameter")
-    if (is.null(Lparam)) {Lparam <- "Not Provided"
-    }else {Lparam <- round(Lparam, digits = 3)}
-    inval <- c(method, paste0(round(lambda1,digits=3),"/",round(lambda0,digits=3),
-                              round(lambda1/lambda0,digits=3)),
-               entry, fup,ratio, alpha, beta,
-               alternative,paste0(Lparam,collapse = ","))
-    inputdata <- data.frame(parameter=inparam, value=inval)
-    print(inputdata, row.names = FALSE)
+    cat("------------------------------------------ \n ")
+    names(inputdata) <- c("__Parameter__", "__Value__")
+    print(inputdata, row.names = FALSE, right=FALSE)
+    cat("------------------------------------------ \n ")
     cat("-----Summary of the Output Parameters----- \n ")
-    outparam <- c("Number of Events", "Number of Total Sampe Size",
-                  "Overall Event Rate")
-    outval <- round(c(Dnum, N, Dnum/N),digits=3)
-    outputdata <- data.frame(parameter=outparam, value=outval)
-    print(outputdata, row.names = FALSE)
+    cat("------------------------------------------ \n ")
+    names(outputdata) <- c("__Parameter__", "__Value__")
+    print(outputdata, row.names = FALSE, right=FALSE)
+
   }
-  return(list(eventN=Dnum,totalN=N))
+  return(list(eventN=Dnum,totalN=N,summary=summaryout))
 }
 
 #' @title Event Rate Calculation
@@ -192,16 +208,37 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
 #' @param l_shape shape parameter of weibull distribution for drop-out
 #' @param l_scale scale parameter of weibull distribution for drop-out
 #' @return
-#' the event rate at the end of study
+#' a list of components:
+#' \item{ep1}{event rate for treatment group}
+#' \item{ep0}{event rate for control group}
+#' \item{ep}{mean event rate weithed by the randomization ratio}
 #' @details
 #' The event rate is calculated based on the following assumptions: 1)
 #' patients are uniformly enrolled within \code{entry} time; 2) survival
 #' times for treatment and control are from exponential distribution; 3)
 #' the drop-out times for treatment and control follow the weibull distribution.
-#' The final rate is obtained via numeric integration.
+#' The final rate is obtained via numeric integration:
+#'
+#' \deqn{
+#'P=\int_{t_{fup}}^{t_{enrl}+t_{fup}} \Big \{
+#' \int_0^{t}r(u)exp\big [-\int_0^u[r(x)+l(x)]dx \big]d(u) \Big \}
+#' \frac{1}{t_{enrl}} dt
+#' }
+#' where \eqn{r(x)} is the hazard of event and \eqn{l(x)} is the hazard
+#' of drop-out; \eqn{t_{enrl}} is the entry time and \eqn{t_{fup}} is the
+#' follow-up duration.
 #' @examples
 #' \dontrun{
-#' cal_event(1,0.1,0.2,5,5,0.5,30)
+#' # median surival time for treatment and control :
+#' 16 months vs 12  months
+#' # entry time: 12 months ; follow-up time: 18 months
+#' # the shape parmater for weibull drop-out : 0.5
+#' # median time for drop-out : 48 =>
+#' scale parameter: 48/log(2)^(1/0.5)=100
+#' RR <- 1; l1 <- log(2)/16; l0 <- log(2)/12
+#' t_enrl <- 12; t_fup <- 18
+#'
+#' cal_event(1,l1,l0,t_enrl,t_fup,0.5,100)
 #' }
 #' @rdname cal_event
 #' @export
@@ -226,6 +263,8 @@ cal_event <- function(
   ## placebo
   e0 <- calp(lambda0)
   e <- ratio/(1+ratio)*e1+e0/(1+ratio)
-  return(e)
+  return(list(ep1 = e1,
+              ep0 = e0,
+              ep = e))
 }
 

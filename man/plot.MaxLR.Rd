@@ -19,8 +19,6 @@ Display weight functions used in the function \code{MaxLRtest}
 }
 \examples{
 \dontrun{
-if(interactive()){
- #EXAMPLE1
- }
+See examples in the help file of function \code{MaxLRtest}
 }
 }

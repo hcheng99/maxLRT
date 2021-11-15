@@ -1,38 +1,52 @@
 #' @title Weight Function Generation
 #' @description Generate commonly used weight functions for \code{MaxLRtest}
-#' function or \code{pwr2n.MaxLR} function
+#' function or \code{pwr2n.NPH} function
 #' @param method a vector of text specifying the method(s). The method(s)
 #' must be one or some of c(\code{"LR"}, \code{"FH"}, \code{"Wilcoxon"},
 #'  \code{"Tarone"},\code{"Maxcombo"},\code{"Maxcross"}).  Default: c("LR")
-#' @param param a vector of length 2. If \code{FH} method is used, the
+#' @param param a vector of length 2. If \code{FH} method is selected,
 #' \eqn{\rho} and \eqn{\gamma} parameters must be provided, Default: 1
 #' @param theta a value within (0,1). If method \code{Maxcross} is selected,
-#' \code{theta} should be specified.See details. Default: 0.5
+#' \code{theta} should be specified. See details. Default: 0.5
 #' @return
-#'  a list of weight functions
+#'  a list of weight functions.
 #' @details
 #' The weight function for Fleming-Harrington (FH) test is \eqn{S(t)^\rho(1-S(t)^\gamma)}
 #' If \code{FH} test is used, both \eqn{\rho} and \eqn{\gamma} should be provided.
 #' The weight for Tarone and Ware test is \eqn{y(t)^{1/2}}, where \eqn{y(t)} is number
 #' of subjects at risk. The weight for Wilcoxon test is \eqn{y(t)}.See Klein (2003) for
-#' more details. Both Maxcombo test and test proposed by Cheng and He (2021)
-#' needs four weight functions. Cheng's method is more sensitive in detecting
+#' more details about all those tests. Both Maxcombo test and test proposed by
+#' Cheng and He (2021)
+#' need four weight functions. Cheng's method is more sensitive in detecting
 #' crossing hazards. A nuisance parameter \code{theta} is required to be
-#' specified. \code{theta} represents the CDF at crossing time point. If the hazards
-#' occur in the early phase of the study, a smaller value should be chosen. The
+#' specified. Parameter \code{theta} represents the Cumulative Density Function
+#' (CDF) at the crossing time point.
+#' If the hazards crossing
+#' occurs in the early phase of the study, a smaller value should be chosen. The
 #' default value is 0.5.
 #'
+#' Function \code{MaxLRtest} supports different base functions like Pooled
+#' Kaplan-Meier (K-M) version of CDF functions rather than K-M survival functions.
+#' Therefore, if a F(0,1) test is requested, the returned function is
+#' \code{function(x) {x}}, where x denotes the estimated CDF for
+#' \code{KM} base. All the supported
+#' base functions are increasing over time.
 #'
+#'@references
+#'Klein, J. P., & Moeschberger, M. L. (2003). Survival analysis: techniques for
+#'censored and truncated data (Vol. 1230). New York: Springer.
+#'
+#'Cheng, H., & He, J. (2021). A Maximum Weighted Logrank Test in Detecting
+#'Crossing Hazards. arXiv preprint arXiv:2110.03833.
 #' @examples
 #' \dontrun{
-#' if(interactive()){
 #' #logrank test
 #' gen.wgt(method="LR")
 #' # FH and logrank test
 #' fn <- gen.wgt(method=c("FH","LR"),param=c(1,1))
-#' fn[[1]](0.4)
-#'  }
 #' }
+#' @seealso
+#'  \code{\link{MaxLRtest}}, \code{\link{pwr2n.NPH}}
 #' @rdname gen.wgt
 #' @export
 gen.wgt <- function(method=c("LR")
@@ -84,7 +98,7 @@ gen.wgt <- function(method=c("LR")
         f01=function(x){x},
         f10=function(x){1-x},
         fcross=function(x,pp=theta){
-            (x<=pp)*(-1/pp*x+1)+(x>pp)*(-1/(1-pp)*(x-pp))}
+            (x<=pp)*(1/pp*x-1)+(x>pp)*(1/(1-pp)*(x-pp))}
       ))
 
     }

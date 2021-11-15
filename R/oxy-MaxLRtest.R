@@ -1,18 +1,21 @@
 #' @title Maximum Weighted Logrank Test
 #' @description \code{MaxLRtest} performs the maximum weighted logrank test if
-#' multiple weight functions are provided. If single weight function is specified,
-#' it is the regular weighted logrank test.
-#' @param dat a dataframe or matrix, of which the first three columns are survival
+#' multiple weight functions are provided. It is the regular weighted logrank test,
+#' if single weight function is specified,
+#'
+#' @param dat a dataframe or matrix. The first three columns of the data
+#' set are survival
 #' time, event status indicator  and group label. The status indicator, normally
 #' 0=alive, 1=dead/event. Other choices are TRUE/FALSE (TRUE=death) or 1/2 (2=death).
 #' The group label can be either numeric values like 0=control, 1=treatment or text
 #' like C=control, T=treatment.
 #'
-#' @param Wlist a list object with components of weight functions
-#' @param base a text must be one of c("\code{KM}","\code{Combined}","\code{N}"), Default: c("KM")
+#' @param Wlist a list with components of weight functions
+#' @param base a text must be one of c("\code{KM}", "\code{Combined}", "\code{N}"),
+#'  Default: c("KM")
 #' @param alpha a number indicating type I error rate, Default: 0.05
-#' @param alternative a text must be one of c("\code{two.sided}","\code{less}",
-#' \code{"greater"}), indicating the alternative hypothesis, Default: c("two.sided")
+#' @param alternative a text must be one of c("\code{two.sided}", "\code{less}",
+#'  \code{"greater"}), indicating the alternative hypothesis, Default: c("two.sided")
 #' @return
 #' a list of components including
 #' \item{stat}{a value giving statistic. It is logrank or weighted logrank test
@@ -44,40 +47,36 @@
 #' increasing function of time t. Function \code{gen.wgt} helps to generate the commonly
 #' used weight functions.
 #'
+#'  Let \eqn{\Lambda_1} and \eqn{\Lambda_0} denote the cumulative hazard for
+#'  treatment and control group. The alternative of a two-sided test is
+#'  \eqn{H_a: \Lambda_1 \neq \Lambda_0}. The \code{"less"} alternative
+#'  corresponds to \eqn{H_a: \Lambda_1 < \Lambda_0} and the \code{"greater"}
+#'  alternative is \eqn{H_a: \Lambda_1 > \Lambda_0}.
+#'
 #' A p-value is obtained from a multivariate normal distribution if multiple weights
 #' are provided. The function \code{pmvnorm} from R package \pkg{mvtnorm} is used.
 #' Because the algorithm is slightly seed-dependent,the p-value and critical value
 #' is the average of 10 runs.
 #' @examples
 #' \dontrun{
-#'data(lung)
-#'tmpd <- with(lung, data.frame(time=SurvTime,stat=1-censor,grp=Treatment))
-#'timef1 <- function(x){1}
-#'timef2 <- function(x){(x)}
-#'timef3 <- function(x){1-x}
-#'timef5 <- function(x,pp=1/2){(x<=pp)*(-1/pp*x+1)+(x>pp)*(-1/(1-pp)*(x-pp))}
-#'W_4e <- list(timef1,timef2,timef3,timef5)
-#'#logrank test
-#'t1 <- MaxLRtest(tmpd
-#'                        ,Wlist=list(timef1)
-#'                        ,base=c("KM")
-#'                        ,alpha=0.05
-#'                        ,alternative=c("two.sided")
-#')
-#'t1$stat ;t1$p.value
-#'# maximum weighted logrank test
-#'t2 <- MaxLRtest(tmpd
-#'                        ,Wlist=W_4e
-#'                        ,base=c("KM")
-#'                        ,alpha=0.05
-#'                        ,alternative=c("two.sided")
-#')
-#'t2$stat ;t2$p.value
+#' data(lung)
+#' #Only keep variables for analysis
+#' tmpd <- with(lung, data.frame(time=SurvTime,stat=1-censor,grp=Treatment))
+#' #logrank test
+#' wlr <- gen.wgt(method = "LR")
+#' t1 <- MaxLRtest(tmpd, Wlist = lwlr, base = c("KM") )
+#' t1$stat ;t1$p.value
+#'
+#'
+#' # maxcombo test
+# 'wmax <- gen.wgt(method="Maxcombo")
+#' t2 <- MaxLRtest(tmpd, Wlist = wmax, base = c("KM") )
+#' t2$stat ;t2$p.value
 #' #visualize the weight functions
 #' plot(t2)
 #' }
 #' @seealso
-#'  \code{\link{pwr2n.maxLR}}
+#'  \code{\link{pwr2n.NPH}}, \code{\link{gen.wgt}}
 #' @export
 #' @importFrom mvtnorm qmvnorm pmvnorm
 MaxLRtest <- function(dat
@@ -189,9 +188,7 @@ MaxLRtest <- function(dat
 #' plots are produced on the current graphics device
 #' @examples
 #' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
+#' See examples in the help file of function \code{MaxLRtest}
 #' }
 #' @rdname plot.MaxLR
 #' @export

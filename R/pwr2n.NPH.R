@@ -1,22 +1,22 @@
 
-
 ###input parameters
-pwr2n.maxLR<- function(entry   = 1
-                       ,fup      = 1
-                       ,CtrlHaz
-                       ,hazR
-                       ,transP1 = c(0, 0)
-                       ,transP0 = c(0, 0)
-                       ,Wlist = list(function(x){ x^0})
-                       ,entry_pdf0=function(x){(1/entry)*(x>=0&x<=entry)}
-                       ,entry_pdf1=entry_pdf0
-                       ,ratio    = 1
-                       ,alpha    = 0.05
-                       ,beta     = 0.1
-                       ,alternative = c("two.sided")
-                       ,criteria = 500
-                       ,k        = 100
-                       ,summary = TRUE
+pwr2n.NPH<- function(method = "MaxLR"
+                     ,entry   = 1
+                     ,fup      = 1
+                     ,CtrlHaz
+                     ,hazR
+                     ,transP1 = c(0, 0)
+                     ,transP0 = c(0, 0)
+                     ,Wlist = list(function(x){ x^0})
+                     ,entry_pdf0=function(x){(1/entry)*(x>=0&x<=entry)}
+                     ,entry_pdf1=entry_pdf0
+                     ,ratio    = 1
+                     ,alpha    = 0.05
+                     ,beta     = 0.1
+                     ,alternative = c("two.sided")
+                     ,criteria = 500
+                     ,k        = 100
+                     ,summary = TRUE
 ){
 
   if (!alternative %in% c("two.sided","greater","less")){
@@ -72,37 +72,52 @@ pwr2n.maxLR<- function(entry   = 1
         Vmat[k1,k2] <-  dnum*t(W[,k1]*W[,k2]) %*%(pdat$rho*pdat$eta)
       }
     }
-    rho_est <- stats::cov2cor(Vmat)
-    mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))/sqrt(diag(Vmat))
-    if (alternative=="two.sided"){
-      ftwo <- function(i){
-        #set.seed(i)
-        crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
-                                 mean=rep(0,wn),sigma = rho_est)$quantile
-        power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
-        return(c(crit,power))
+    if (method=="MaxLR"){
+      rho_est <- stats::cov2cor(Vmat)
+      mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))/sqrt(diag(Vmat))
+      if (alternative=="two.sided"){
+        ftwo <- function(i){
+          #set.seed(i)
+          crit <- mvtnorm::qmvnorm(1-alpha,tail="both.tails",
+                                   mean=rep(0,wn),sigma = rho_est)$quantile
+          power <- 1-mvtnorm::pmvnorm(-crit,crit,mean=mu,sigma = rho_est)
+          return(c(crit,power))
+        }
+        ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+        power <- ftwod[2]
+        crit <- ftwod[1]
+      }else if (alternative=="less"){ # l1 <l0
+        ftwo <- function(i){
+          # set.seed(i)
+          crit <- mvtnorm::qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+          power <- 1-mvtnorm::pmvnorm(crit,Inf,mean=mu,sigma = rho_est)[1]
+          return(c(crit,power))
+        }
+        ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+        crit <- ftwod[1];  power <- ftwod[2]
+      }else if (alternative=="greater"){
+        ftwo <- function(i){
+          #set.seed(i)
+          crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
+          power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)[1]
+          return(c(crit,power))
+        }
+        ftwod <-  apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
+        crit <- ftwod[1];  power <- ftwod[2]
       }
-      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-      power <- ftwod[2]
-      crit <- ftwod[1]
-    }else if (alternative=="less"){ # l1 <l0
-      ftwo <- function(i){
-        # set.seed(i)
-        crit <- mvtnorm::qmvnorm(alpha,tail="lower.tail",mean=rep(0,wn),sigma = rho_est)$quantile
-        power <- 1-mvtnorm::pmvnorm(crit,Inf,mean=mu,sigma = rho_est)[1]
-        return(c(crit,power))
+    }
+    else if (method=="Projection"){
+      if (alternative!="two.sided"){
+        cat(c("note: only two-sided is supported for projection test."))
+
       }
-      ftwod <- apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-      crit <- ftwod[1];  power <- ftwod[2]
-    }else if (alternative=="greater"){
-      ftwo <- function(i){
-        #set.seed(i)
-        crit <- qmvnorm(alpha,tail="upper.tail",mean=rep(0,wn),sigma = rho_est)$quantile
-        power <- 1-pmvnorm(-Inf,crit,mean=mu,sigma = rho_est)[1]
-        return(c(crit,power))
-      }
-      ftwod <-  apply(do.call(rbind,sapply(1:10,ftwo,simplify=FALSE)) ,2,mean)
-      crit <- ftwod[1];  power <- ftwod[2]
+      ## get the rank of the variance matrix
+      mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))
+      vr <- qr(Vmat)$rank
+      crit <- stats::qchisq(1-alpha,df=vr)
+      ## get the noncentral parameter
+      lmd <- t(mu)%*%MASS::ginv(Vmat)%*%mu
+      power <- stats::pchisq(crit,df=vr,ncp=lmd,lower.tail = FALSE)
     }
 
     if (power<1-beta&count<criteria) {dnum<-dnum+1}
@@ -117,22 +132,28 @@ pwr2n.maxLR<- function(entry   = 1
 
   eprob <- stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(1,ratio))
   Nsize <- dnum/eprob
+
+  inparam <- c("Method","Entry Time", "Follow-up Time",
+               "Allocation Ratio", "Type I Error", "Type II Error",
+               "Alternative","Number of Weights")
+  inval <- c(method,entry,fup,ratio, alpha, beta,
+             alternative,length(Wlist))
+  inputdata <- data.frame(parameter=inparam, value=inval)
+  outparam <- c("Number of Events", "Number of Total Sampe Size",
+                "Asymptotic Power", "Overall Event Rate")
+  outval <- c(round(c( dnum, Nsize, as.numeric(power),eprob),digits = 3))
+  outputdata <- data.frame(parameter=outparam, value=outval)
+
   if (summary==TRUE){
     cat("-----Summary of the Input Parameters----- \n")
-    inparam <- c("Entry Time", "Follow-up Time",
-                 "Allocation Ratio", "Type I Error", "Type II Error",
-                 "Alternative","Number of Weights for test")
-    inval <- c(entry,fup,ratio, alpha, beta,
-               alternative,length(Wlist))
-    inputdata <- data.frame(parameter=inparam, value=inval)
+
     print(inputdata, row.names = FALSE)
     cat("-----Summary of the Output Parameters----- \n ")
-    outparam <- c("Number of Events", "Number of Total Sampe Size",
-                  "Asymptotic Power", "Overall Event Rate")
-    outval <- round(c(dnum, Nsize, as.numeric(power),eprob),digits = 3)
-    outputdata <- data.frame(parameter=outparam, value=outval)
+
     print(outputdata, row.names = FALSE)
   }
+  summaryoutput <- list(input = inputdata, output = outputdata)
+
   inputfun <-list(
     alpha = alpha,
     beta = beta,
@@ -157,21 +178,51 @@ pwr2n.maxLR<- function(entry   = 1
                    ,RandomizationRatio=ratio
                    ,eventList = event
                    ,inputfun = inputfun
+                   ,summaryout = summaryoutput
 
   )
-  class(listall) <-"MaxLRpwr"
+  class(listall) <-"NPHpwr"
   return(listall)
 
 
 }
 
+summary.NPHpwr <- function(object){
+  summary <- object$summaryout
+  wl  <- lapply(object$inputfun$Weightfunctions,deparse)
+  wlc <- paste0(noquote(unlist(noquote(lapply(wl,"[",3)))),collapse=";")
+  wlc <- gsub("\\s","",wlc)
+  input <- data.frame(Parameter = c(summary$input$parameter,"Weight Functions"),
+                      Value = c(summary$input$value, wlc))
+
+  output <- summary$output
+  names(input) <- c("__Parameter__", "__Value__")
+  names(output) <- c("__Parameter__", "__Value__")
+  cat("------------------------------------------ \n ")
+  cat("----Summary of the Input Parameters---- \n")
+  cat("------------------------------------------ \n ")
+
+  print(input, row.names = FALSE, right=FALSE, justify = "left")
+  cat("------------------------------------------ \n ")
+  cat("-----Summary of the Output Parameters----- \n ")
+  cat("------------------------------------------ \n ")
+  print(output, row.names = FALSE, right=FALSE, , justify = "left")
+  cat("------------------------------------------ \n ")
+  cat("Notes: the base (x) of weight function is \n K-M estimate of CDF ")
+}
+
+
+
+
+
+
 #*********************************************
 #*show the survival plot/ hazards plots
 #*********************************************
-plot.MaxLRpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),...) {
-  datM <- x$pdat
-  totalN <- x$totalN
-  ratio <- x$RandomizationRatio
+plot.NPHpwr<- function(object,type=c("hazard","survival","dropout","event","censor"),...) {
+  datM <- object$pdat
+  totalN <- object$totalN
+  ratio <- object$RandomizationRatio
   tval <-1
   if( missing(type)){ tval <- 0}
   ## draw the survival curves

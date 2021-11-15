@@ -1,11 +1,15 @@
 #' @title Graphic Display of Hazard and Survival Function
-#' @description Plot the hazard and survival function of the input control
-#' group distribution (weibull or loglogistic) and a list of
-#' arbitrary hazard ratio functions.
-#' @param bsl_dist a text must be one of (\code{"weibull"},\code{"loglogistic"})
+#' @description Plot the hazard and survival function of the
+#' of control group (from weibull or loglogistic distribution) and treatment group
+#' (derived from an arbitrary hazard ratio function)
+#'
+#'
+#' @param bsl_dist a text must be one of (\code{"weibull"},
+#' \code{"loglogistic"}) distribution, specified for the control group
 #' @param param a vector of length 2, specifying the shape and rate (1/scale)
 #' parameter of the \code{bsl_dist} distribution, Default: c(1.2, 0.03)
-#' @param fun_list a list of hazard ratio functions
+#' @param fun_list a list of hazard ratio functions comparing treatment group
+#' and control group
 #' @param end a value specifying the duration of the curve
 #' @param tit a vector specifying the titles of each graph, Default: c("Hazard Function", "Survival Function")
 #' @param pos a graphic parameter in the form of c(nr,nc). Subsequent
@@ -16,8 +20,7 @@
 #' graphic display of hazard and survival functions
 #' @examples
 #' \dontrun{
-#' if(interactive()){
-#'
+#' # proportional hazards
 #'plotHazSurv(
 #'  bsl_dist=c("weibull")
 #'  ,param=c(1.2,1/30)
@@ -26,12 +29,16 @@
 #'  ,tit= c("Hazard Function","Survival Function")
 #'  ,pos=c(1,2)
 #')
-#'
-#'  }
+#' # crossing hazards
+#'plotHazSurv(
+#'  bsl_dist=c("weibull")
+#'  ,param=c(1.2,1/30)
+#'  ,fun_list=list(function(x){1.3*(x<10)+(x>=10)*0.7})
+#'  ,40
+#'  ,tit= c("Hazard Function","Survival Function")
+#'  ,pos=c(1,2)
+#')
 #' }
-#' @seealso
-#'  \code{\link[graphics]{par}},\code{\link[graphics]{lines}},\code{\link[graphics]{mtext}},\code{\link[graphics]{legend}}
-#'  \code{\link[stats]{integrate}}
 #' @rdname plotHazSurv
 #' @export
 #' @importFrom graphics par lines mtext legend

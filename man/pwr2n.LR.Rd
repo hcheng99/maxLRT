@@ -43,7 +43,7 @@ Default: 0.1}
 \item{alternative}{a value must be one of ("two.sided", "one.sided"), indicating
 whether a two-sided or one-sided test to use.  Default: c("two.sided")}
 
-\item{Lparam}{a vector of parameters for the drop-out Weibull distribution,
+\item{Lparam}{a vector of shape and scale parameters for the drop-out Weibull distribution,
 See Details below. Default: NULL}
 
 \item{summary}{a logical controlling whether a brief summary is printed or not
@@ -52,6 +52,7 @@ See Details below. Default: NULL}
 \value{
 \item{eventN}{The total number of events}
 \item{totalN}{The total number of subjects}
+\item{summary}{a list containing the input parameters and output results}
 }
 \description{
 \code{pwr2n.LR} calculates the total number of events and total
@@ -59,15 +60,20 @@ number of subjects required given the provided design parameters based on either
 schoenfeld or freedman formula.
 }
 \details{
-The total event number is determined only by \eqn{\alpha, \beta} and
+Both Schoenfeld's formula and Freedman's formula are  included in
+function \code{pwr2n.LR}
+The total event number is determined by \eqn{\alpha, \beta} and
 hazard ratio, i.e., \eqn{\lambda_1/\lambda_0}. Other design parameters such as
 enrollment period affects the event probability and thus the total sample size.
-A fixed duration design is assumed in the calculation. ALl patients are enrolled
+A fixed duration design is assumed in the calculation. All patients are enrolled
 at a constant rate within \code{entry} time and have at least \code{fup}
 time of follow-up. So the total study duration is \code{entry}+\code{fup}.
 If drop-out is expected, a Weibull distribution with shape parameter -\eqn{\alpha}
-and scale parameter - \eqn{\beta} is considered. The CDF is
-\eqn{F(x)=1-exp(-(x/\beta)^\alpha)}.
+and scale parameter - \eqn{\beta} is considered. The CDF of Weibull is
+\eqn{F(x)=1-exp(-(x/\beta)^\alpha)}, where \eqn{\alpha} is the shape
+parameter and \eqn{\beta} is the scale parameter. The event rate
+is calculated through numeric integration. See more details in
+\code{\link{cal_event}}.
 }
 \examples{
 \dontrun{
@@ -108,6 +114,6 @@ Freedman, L. S. (1982) Tables of the number of patients required
 in clinical trials using the logrank test. Statistics in medicine, 1, 121–129.
 }
 \seealso{
-\code{\link{pwr2n.maxLR}}, \code{\link{pwr2n.prj}},
-\code{\link{evalfup}}
+\code{\link{pwr2n.NPH}},
+\code{\link{evalfup}}, \code{\link{cal_event}}
 }
