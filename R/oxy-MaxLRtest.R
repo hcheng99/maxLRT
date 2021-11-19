@@ -79,6 +79,7 @@
 #'  \code{\link{pwr2n.NPH}}, \code{\link{gen.wgt}}
 #' @export
 #' @importFrom mvtnorm qmvnorm pmvnorm
+#' @importFrom survival Surv survfit
 MaxLRtest <- function(dat
                       ,Wlist
                       ,base=c("KM")
@@ -104,7 +105,7 @@ MaxLRtest <- function(dat
   }
   if (base=="KM"|missing(base)){
     # based on the pooled survival
-    s_fit<- survival::survfit(Surv(dat[,1], dat[,2])~1 , data = dat)
+    s_fit<- survival::survfit(survival::Surv(dat[,1], dat[,2])~1 , data = dat)
     f_s <- stats::stepfun(s_fit$time,y=c(0,1-s_fit$surv),right = TRUE)
     tnew <- f_s(datM$time)
   }
