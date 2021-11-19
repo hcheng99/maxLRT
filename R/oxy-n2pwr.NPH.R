@@ -1,7 +1,7 @@
 ###input parameters
-#' @title Power Calculation with Maximum Weighted Logrank Test
+#' @title Power Calculation with Combination Test
 #' @description  \code{n2pwr.NPH} calculates the power given either the
-#' number of events or number of subjects
+#' number of events or number of subjects using combination test
 #' @param method a text specifying the calculation method, either
 #' \code{"MaxLR"} or \code{"Projection"}. Maximum weighted
 #' logrank test is used if \code{"MaxLR"} is specified; otherwise,
@@ -24,28 +24,25 @@
 #' The element of the list must be functions. Default is a list of one constant
 #' function, corresponding to the logrank test.
 #' @param entry_pdf0 a function, indicating the probability density function (pdf)
-#' of enrollment time for control group. The default assumes a uniform distribution
+#' of enrollment/entry time for control group. The default assumes a uniform distribution
 #' corresponding to the constant enrollment rate.
 #' Default: function(x) {
 #'    (1/entry) * (x >= 0 & x <= entry)
 #'}
-#' @param entry_pdf1 a pdf functionof enrollment time for treatment
+#' @param entry_pdf1 a pdf function of enrollment/entry time for treatment
 #' @param eventN the number of events
 #' @param totalN the number of subjects
 #' @param ratio allocation ratio, Default: 1
 #' @param alpha type i error, Default: 0.05
-#' @param alternative alternative hypothesis, Default: c("two.sided", "less", "greater")
+#' @param alternative alternative hypothesis - one of c(\code{"two.sided", "less", "greater"}),
+#' Default: \code{"two.sided"}
 #' @param k an integer, indicating number of sub-intervals per time unit, Default: 100
-#' @param criteria an integer indicating the maximum iteration allowed in
-#' obtaining the number of events. See details , Default: 500
 #' @return
 #' a list of components:
 #' \item{power}{asymptotic power }
-#' \item{eventN}{number of events. If this is the input, it is the input
-#' number. If totalN is specified, eventN is calculated based on provided
-#' parameters}
-#' \item{totalN}{number of subjects. If eventN is specified, totalN is calculated
-#' based on provided parameters. Otherwise, it the same as input.}
+#' \item{inN}{a vector consisting of the input of \code{eventN} and \code{totalN}}
+#' \item{outN}{a vector including the output of number of events
+#' and total sample. See details. }
 #' \item{prob_event}{event probability at the end of trial}
 #' \item{L_trans}{a list, consisting of tranisition matrix at each inteval}
 #' \item{pdat}{ a data frame including all the intermediate variables in the calculation.
@@ -53,37 +50,40 @@
 #'  \item{studytime}{a vector of length 2, including the entry and follow-up time as input}
 #'  \item{RandomizationRatio}{as input}
 #' @details
-#' Function \code{npwr.maxLR} calculate the asymptotic power given number
-#' of events or number of subjects using maximum weighted logrank test
-#' iteratively. Check function \code{pwr2n.maxLR} for more details.
+#' Function \code{npwr.NPH} calculates the asymptotic power given number
+#' of events or number of subjects using maximum weighted logrank test or
+#' projection type test. If only \code{eventN} is provided, the
+#' asymptotic power is based on provided number of events. If
+#' only \code{totalN} is given, the pooled event probability (\eqn{eprob}) is calculated
+#' according input design parameters including entry time, follow-up time
+#' and hazard functions, etc. The number of events is calculated as
+#' \code{totalN}*\eqn{eprob}, which is given in returned vector \code{outN}.
+#' Similarly, if only \code{eventN} is given, the total sample
+#' size is given as \code{eventN}/\eqn{eprob}. However, if both
+#' \code{eventN} and \code{totalN} are provided, we only use
+#' \code{eventN} for calculation.
+#' Check function \code{pwr2n.NPH} for more calculation details.
 #' @examples
 #' \dontrun{
-#' if(interactive()){
-#'  t_enrl <- 12
-#'t_fup <- 18
-#'lmd0 <- -log(0.2)/10
-#'#delayed treatment effects
-#'f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
-#'ss <- 1
-#'ratio <-1
-#'alpha <- 0.05
-#'beta <- 0.1
-#'maxc <- gen.wgt(method="Maxcombo")
-#'pwr1 <- n2pwr.NPH(entry   = t_enrl
-#'                    ,fup      = t_fup
+#' # entry time
+#' t_enrl <- 12
+#' # follow-up time
+#' t_fup <- 18
+#' # baseline hazard
+#' lmd0 <- -log(0.2)/10
+#' # delayed treatment effects
+#' f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+#' # maxcombo test
+#' maxc <- gen.wgt(method="Maxcombo")
+#' pwr1 <- n2pwr.NPH(entry   = t_enrl
+#'                  ,fup      = t_fup
 #'                  ,CtrlHaz = function(x){x^0*lmd0}
 #'                  ,hazR = f_hr_delay
 #'                  ,transP1 = c(0,0)
 #'                  ,transP0 = c(0,0)
 #'                  ,Wlist = maxc
 #'                  ,eventN = 50 # targeted number of events
-#'                  ,ratio    = 1
-#'                  ,alpha    = 0.05
-#'                  ,alternative=c("two.sided")
-#'                  ,k        = 100
-#'                  ,criteria = 100
 #')
-#'  }
 #' }
 #' @seealso
 #'  \code{\link{pwr2n.NPH}}
@@ -100,17 +100,37 @@ n2pwr.NPH<- function(method = "MaxLR"
                        ,Wlist
                        ,entry_pdf0=function(x){(1/entry)*(x>=0&x<=entry)}
                        ,entry_pdf1=entry_pdf0
-                       ,eventN
-                       ,totalN
+                       ,eventN = NULL
+                       ,totalN = NULL
                        ,ratio    = 1
                        ,alpha    = 0.05
-                       ,alternative=c("two.sided","less","greater")
+                       ,alternative=c("two.sided")
                        ,k        = 100
-                       ,criteria = 100
 ){
-  if (missing(eventN)&missing(totalN)){
-    stop("At least one of eventN/totalN must be provided")
+  if (is.null(eventN)) {
+    mce <- 1
+    old.event <- NA
+    }
+  else {
+    mce <- 0
+    old.event <- eventN
   }
+  if (is.null(totalN)) {
+    mct <- 1
+    old.total <- NA
+    }else {
+      mct <- 0
+      old.total <- totalN
+    }
+
+  if (mce+mct==2){
+    stop("At least one of eventN/totalN must be provided")
+  }else if (mce+mct==0){
+    message("Both number of events and number of subjects are specified.
+             The asymptotic power is calculated based on number of events.")
+  }
+
+  old.total <- totalN
   tot_time <- entry+fup
   num <- k*tot_time
   # create the subintervals
@@ -127,8 +147,8 @@ n2pwr.NPH<- function(method = "MaxLR"
 
   pdat <- load$pdat
   eprob <- stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(1,ratio))
-  if (missing(eventN)){ eventN <- round(totalN*eprob)}
-  if (missing(totalN)){ totalN <- round(eventN/eprob)}
+  if (mce==1){ eventN <- round(totalN*eprob)}
+  if (mct==1|mce+mct==0){ totalN <- round(eventN/eprob)}
   wn <- length(Wlist)
   W <- matrix(NA,nrow=nrow(pdat),ncol=wn)
   ## calculate the variance-covariance matrix
@@ -175,7 +195,7 @@ n2pwr.NPH<- function(method = "MaxLR"
   }
   else if (method == "Projection"){
     if (alternative!="two.sided"){
-      cat(c("note: only two-sided is supported for projection test."))
+      message(c("note: only two-sided is supported for projection test."))
     }
     ## get the rank of the variance matrix
     mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))
@@ -186,11 +206,14 @@ n2pwr.NPH<- function(method = "MaxLR"
     power <- stats::pchisq(crit,df=vr,ncp=lmd,lower.tail = FALSE)
 
   }
-
+  inn <- c(old.event, old.total)
+  names(inn) <- c("event","total")
+  outn <- c(eventN, totalN)
+  names(outn) <- c("event","total")
 
   listall <- list( power = as.numeric(power)
-                   ,eventN  = eventN
-                   ,totalN = totalN
+                   ,inN  = inn
+                   ,outN = outn
                    ,prob_event =eprob
                    ,L_trans = load$L_trans
                    ,pdat = pdat

@@ -1,7 +1,7 @@
 #' @title Maximum Weighted Logrank Test
 #' @description \code{MaxLRtest} performs the maximum weighted logrank test if
 #' multiple weight functions are provided. It is the regular weighted logrank test,
-#' if single weight function is specified,
+#' if a single weight function is specified,
 #'
 #' @param dat a dataframe or matrix. The first three columns of the data
 #' set are survival
@@ -18,18 +18,18 @@
 #'  \code{"greater"}), indicating the alternative hypothesis, Default: c("two.sided")
 #' @return
 #' a list of components including
-#' \item{stat}{a value giving statistic. It is logrank or weighted logrank test
+#' \item{stat}{a numeric value indicating the test statistic. It is logrank or weighted logrank test
 #' statistic if one weight function is specified. Otherwise, it gives
 #' the maximum weighted logrank test statistic, which takes the maximum
 #' of absolute values of all the statistics. }
-#' \item{stat.mat}{a matrix with the first column showing the weighted
-#' logrank test statistic and other columns displaying the variance and
+#' \item{stat.mat}{a matrix with the first column showing weighted
+#' logrank test statistics and other columns displaying the variance and
 #' covariance between statistics}
-#' \item{critV}{a value indicating the critical value corresponding to the nomial
-#' level}
+#' \item{critV}{a value indicating the critical value corresponding to the nominal
+#' level - \code{alpha}}
 #' \item{details}{a dataframe showing the intermediate variables used in the
 #' calculation. }
-#' \item{p.value}{a value indicating the p-value of the test}
+#' \item{p.value}{a numeric value indicating the p-value of the test}
 #' @details
 #' \code{MaxLRtest} function performs logrank, weighted logrank test such as
 #' Flemming-Harrigton test and maximum weighted logrank test depending on
@@ -188,9 +188,11 @@ MaxLRtest <- function(dat
 #' plots are produced on the current graphics device
 #' @examples
 #' \dontrun{
-#' See examples in the help file of function \code{MaxLRtest}
+#' See examples in the help file of function MaxLRtest
 #' }
 #' @rdname plot.MaxLR
+#' @seealso
+#'  \code{\link{MaxLRtest}}
 #' @export
 #' @importFrom graphics points legend mtext
 plot.MaxLR <- function(x,...) {

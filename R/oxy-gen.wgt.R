@@ -11,10 +11,10 @@
 #' @return
 #'  a list of weight functions.
 #' @details
-#' The weight function for Fleming-Harrington (FH) test is \eqn{S(t)^\rho(1-S(t)^\gamma)}
-#' If \code{FH} test is used, both \eqn{\rho} and \eqn{\gamma} should be provided.
+#' The weight function for Fleming-Harrington (FH) test is \eqn{S(t)^\rho(1-S(t)^\gamma)}.
+#' If \code{FH} test is specified, both \eqn{\rho} and \eqn{\gamma} should be provided.
 #' The weight for Tarone and Ware test is \eqn{y(t)^{1/2}}, where \eqn{y(t)} is number
-#' of subjects at risk. The weight for Wilcoxon test is \eqn{y(t)}.See Klein (2003) for
+#' of subjects at risk. The weight for Wilcoxon test is \eqn{y(t)}. See Klein (2003) for
 #' more details about all those tests. Both Maxcombo test and test proposed by
 #' Cheng and He (2021)
 #' need four weight functions. Cheng's method is more sensitive in detecting
@@ -22,10 +22,10 @@
 #' specified. Parameter \code{theta} represents the Cumulative Density Function
 #' (CDF) at the crossing time point.
 #' If the hazards crossing
-#' occurs in the early phase of the study, a smaller value should be chosen. The
+#' occurs when few events occur yet, a small value should be chosen. The
 #' default value is 0.5.
 #'
-#' Function \code{MaxLRtest} supports different base functions like Pooled
+#' Function \code{MaxLRtest} supports different base functions including pooled
 #' Kaplan-Meier (K-M) version of CDF functions rather than K-M survival functions.
 #' Therefore, if a F(0,1) test is requested, the returned function is
 #' \code{function(x) {x}}, where x denotes the estimated CDF for
@@ -43,7 +43,10 @@
 #' #logrank test
 #' gen.wgt(method="LR")
 #' # FH and logrank test
-#' fn <- gen.wgt(method=c("FH","LR"),param=c(1,1))
+#'   fn <- gen.wgt(method=c("FH","LR"), param = c(1,1))
+#' # maximum weighted logrank test proposed by Cheng, including weight
+#' # for detecting crossing hazards
+#'   wcross <- gen.wgt(method="Macross", theta = c(0.2))
 #' }
 #' @seealso
 #'  \code{\link{MaxLRtest}}, \code{\link{pwr2n.NPH}}

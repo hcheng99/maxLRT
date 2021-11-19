@@ -187,7 +187,7 @@ pwr2n.NPH<- function(method = "MaxLR"
 
 }
 
-summary.NPHpwr <- function(object){
+summary.NPHpwr <- function(object,...){
   summary <- object$summaryout
   wl  <- lapply(object$inputfun$Weightfunctions,deparse)
   wlc <- paste0(noquote(unlist(noquote(lapply(wl,"[",3)))),collapse=";")
@@ -219,10 +219,11 @@ summary.NPHpwr <- function(object){
 #*********************************************
 #*show the survival plot/ hazards plots
 #*********************************************
-plot.NPHpwr<- function(object,type=c("hazard","survival","dropout","event","censor"),...) {
-  datM <- object$pdat
-  totalN <- object$totalN
-  ratio <- object$RandomizationRatio
+plot.NPHpwr<- function(x,type=c("hazard","survival","dropout",
+                                "event","censor"),...) {
+  datM <- x$pdat
+  totalN <- x$totalN
+  ratio <- x$RandomizationRatio
   tval <-1
   if( missing(type)){ tval <- 0}
   ## draw the survival curves
@@ -253,7 +254,7 @@ plot.NPHpwr<- function(object,type=c("hazard","survival","dropout","event","cens
       plot(ti,theta,cex=0.1,lty=1,col=1,xlab="Time",
            ylim=c(min(theta)*0.9,max(theta)*1.1),
            ylab="Hazard Ratio (treatment over control)",
-           main="Hazard Ratio",...)
+           main="Hazard Ratio over Time",...)
 
 
     })
@@ -264,7 +265,7 @@ plot.NPHpwr<- function(object,type=c("hazard","survival","dropout","event","cens
     ymax <- max(c(datM$E_L,datM$C_L))*1.1
     with(datM,{
       plot(ti,E_L,cex=0.1,lty=1,col=1,xlab="Time",ylab="proporion of drop out",
-           ylim=c(0,ymax),main="Drop-out",...)
+           ylim=c(0,ymax),main="Drop-out overtime",...)
       graphics::lines(ti,C_L,col=2,lty=2,...)
       graphics::legend("topleft",legend=c("treatment","control"),
                        col=1:2,lty=1:2,cex=0.8)
@@ -276,7 +277,7 @@ plot.NPHpwr<- function(object,type=c("hazard","survival","dropout","event","cens
     with(datM,{
       plot(ti,E_C,cex=0.1,lty=1,col=1,xlab="Time",
            ylab="proporion of censor",
-           ylim=c(0,ymax),main="Administrative censoring",...)
+           ylim=c(0,ymax),main="Administrative censoring overtime",...)
       graphics::lines(ti,C_C,col=2,lty=2,...)
       graphics::legend("topleft",legend=c("treatment","control"),
                        col=1:2,lty=1:2,cex=0.8)

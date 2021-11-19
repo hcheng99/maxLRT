@@ -2,7 +2,7 @@
 % Please edit documentation in R/oxy-pwr2n.NPH.R
 \name{pwr2n.NPH}
 \alias{pwr2n.NPH}
-\title{Sample Size Calculation with Maximum Weighted Logrank Test}
+\title{Sample Size Calculation with Combination Test}
 \usage{
 pwr2n.NPH(
   method = "MaxLR",
@@ -106,8 +106,9 @@ users}
 \code{pwr2n.NPH} calculates the number of events and
 subjects required to achieve pre-specified power in the setup of two groups.
 The method extends the calculation in the framework of the Markov model by Lakatos, allowing
-for using the maximum weighted logrank tests with an arbitrary number of weight
-functions. If only one weight function is provided, the test is essentially
+for using the maximum weighted logrank tests or projection test with an arbitrary number of weight
+functions. For maximum weighted logrank type test, if only one weight function
+is provided, the test is essentially
 the classic (weighted) logrank test.
 }
 \details{
@@ -139,6 +140,8 @@ treatment and control group. The \code{less} option tests
 }
 \examples{
 \dontrun{
+ #------------------------------------------------------------
+ #Delayed treatment effects using maxcombo test
  ## generate a list of weight functions for maxcombot test
  wmax <- gen.wgt(method = "Maxcombo" )
  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
@@ -148,23 +151,37 @@ treatment and control group. The \code{less} option tests
  snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
                     k = 10, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
 
+ #-------------------------------------------------------------
+ # same setting using projection test
+ snph2 <- pwr2n.NPH(method = "projection", entry = t_enrl,
+  fup = t_fup, Wlist = wmax, k = 10, ratio = 2, CtrlHaz = f_haz0,
+  hazR = f_hr_delay)
+
+ #-------------------------------------------------------------
  #proportional hazards with weibull survival for control group
  #logrank test
  wlr <- gen.wgt(method = "LR" )
  b0 <- 3
-th0 <- 10/(-log(0.2))^(1/b0)
-#Weibull hazard function
-f_hz_weibull <- function(x){b0/th0^b0*x^(b0-1)}
-#hazard ratio function
-f_hr <- function(x){0.5*x^0}
-# define entry and follow-up time
-t_enrl <- 5; t_fup <- 5
-exph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, k = 100, Wlist = wlr,
-   CtrlHaz = f_hz_weibull, hazR = f_hr, summary = FALSE)
+ th0 <- 10/(-log(0.2))^(1/b0)
+ #Weibull hazard function
+ f_hz_weibull <- function(x){b0/th0^b0*x^(b0-1)}
+ #hazard ratio function
+ f_hr <- function(x){0.5*x^0}
+ # define entry and follow-up time
+ t_enrl <- 5; t_fup <- 5
+ exph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, k = 100,
+ Wlist = wlr,  CtrlHaz = f_hz_weibull, hazR = f_hr, summary = FALSE)
+ summary(exph1)
+
+
 
 }
 }
 \references{
+Brendel, M., Janssen, A., Mayer, C. D., & Pauly, M. (2014). Weighted logrank
+permutation tests for randomly right censored life science data. Scandinavian
+Journal of Statistics, 41(3), 742-761.
+
 Cheng, H., & He, J. (2021). A Maximum Weighted Logrank Test in Detecting
 Crossing Hazards. arXiv preprint arXiv:2110.03833.
 

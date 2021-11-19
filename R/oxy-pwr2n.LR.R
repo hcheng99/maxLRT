@@ -26,8 +26,8 @@
 #' \item{summary}{a list containing the input parameters and output results}
 #' @aliases phsize
 #' @details
-#'  Both Schoenfeld's formula and Freedman's formula are  included in
-#'  function \code{pwr2n.LR}
+#'  Both Schoenfeld's formula and Freedman's formula are included in the
+#'  function \code{pwr2n.LR}.
 #'  The total event number is determined by \eqn{\alpha, \beta} and
 #'  hazard ratio, i.e., \eqn{\lambda_1/\lambda_0}. Other design parameters such as
 #'  enrollment period affects the event probability and thus the total sample size.
@@ -229,16 +229,15 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
 #' follow-up duration.
 #' @examples
 #' \dontrun{
-#' # median surival time for treatment and control :
-#' 16 months vs 12  months
+#' # median survival time for treatment and control: 16 months vs 12  months
 #' # entry time: 12 months ; follow-up time: 18 months
-#' # the shape parmater for weibull drop-out : 0.5
+#' # the shape parameter for weibull drop-out : 0.5
 #' # median time for drop-out : 48 =>
-#' scale parameter: 48/log(2)^(1/0.5)=100
-#' RR <- 1; l1 <- log(2)/16; l0 <- log(2)/12
-#' t_enrl <- 12; t_fup <- 18
+#' # scale parameter: 48/log(2)^(1/0.5)=100
+#'   RR <- 1; l1 <- log(2)/16; l0 <- log(2)/12
+#'   t_enrl <- 12; t_fup <- 18
 #'
-#' cal_event(1,l1,l0,t_enrl,t_fup,0.5,100)
+#'   cal_event(1,l1,l0,t_enrl,t_fup,0.5,100)
 #' }
 #' @rdname cal_event
 #' @export

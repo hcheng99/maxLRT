@@ -60,8 +60,8 @@ number of subjects required given the provided design parameters based on either
 schoenfeld or freedman formula.
 }
 \details{
-Both Schoenfeld's formula and Freedman's formula are  included in
-function \code{pwr2n.LR}
+Both Schoenfeld's formula and Freedman's formula are included in the
+function \code{pwr2n.LR}.
 The total event number is determined by \eqn{\alpha, \beta} and
 hazard ratio, i.e., \eqn{\lambda_1/\lambda_0}. Other design parameters such as
 enrollment period affects the event probability and thus the total sample size.

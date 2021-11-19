@@ -32,23 +32,23 @@ Default: c("KM")}
 }
 \value{
 a list of components including
-\item{stat}{a value giving statistic. It is logrank or weighted logrank test
+\item{stat}{a numeric value indicating the test statistic. It is logrank or weighted logrank test
 statistic if one weight function is specified. Otherwise, it gives
 the maximum weighted logrank test statistic, which takes the maximum
 of absolute values of all the statistics. }
-\item{stat.mat}{a matrix with the first column showing the weighted
-logrank test statistic and other columns displaying the variance and
+\item{stat.mat}{a matrix with the first column showing weighted
+logrank test statistics and other columns displaying the variance and
 covariance between statistics}
-\item{critV}{a value indicating the critical value corresponding to the nomial
-level}
+\item{critV}{a value indicating the critical value corresponding to the nominal
+level - \code{alpha}}
 \item{details}{a dataframe showing the intermediate variables used in the
 calculation. }
-\item{p.value}{a value indicating the p-value of the test}
+\item{p.value}{a numeric value indicating the p-value of the test}
 }
 \description{
 \code{MaxLRtest} performs the maximum weighted logrank test if
 multiple weight functions are provided. It is the regular weighted logrank test,
-if single weight function is specified,
+if a single weight function is specified,
 }
 \details{
 \code{MaxLRtest} function performs logrank, weighted logrank test such as

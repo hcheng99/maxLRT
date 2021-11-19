@@ -20,6 +20,7 @@ You can install the released version of nphPower from
 
 ``` r
 #install.packages("nphPower")
+library("nphPower")
 ```
 
 And the development version from [GitHub](https://github.com/) with:
@@ -34,11 +35,64 @@ And the development version from [GitHub](https://github.com/) with:
 This is a basic example which shows you how to perform maximum weighted
 logrank test.
 
-### References
+Load the lung data and only keep columns for analysis.
 
-Cheng,H.and He,J.(2021)A maximum weighted logrank test in detecting
-crossing hazards.
+``` r
+lung <- nphPower::lung
+tmpd <- with(lung, data.frame(time = SurvTime, stat = 1-censor, grp = Treatment))
+```
 
-Lu, K. (2021). Sample size calculation for logrank test and prediction
-of number of events over time. Pharmaceutical Statistics, 20(2),
-229-244.
+Generate the weight functions for maxcombo test
+
+``` r
+wmax <- gen.wgt(method = "Maxcombo")
+```
+
+Perform the test using pooled Kalpan-Meier estimate of CDF as base
+function and visualize the weight functions
+
+``` r
+t1 <- MaxLRtest(tmpd, Wlist = wcross1, base = c("KM"),
+  alternative = c("two.sided"))
+plot(t1)
+```
+
+## Example 2 - sample size under proportional hazard
+
+The design setting is: 5 years’ entry time and 5 years’ follow-up time;
+Median survival for control group is 10 years. The hazard ratio
+comparing treatment and control is 0.5.
+
+``` r
+t_enrl <- 5; t_fup <- 5 ; lmd0 <- -log(0.2)/10 ; HR <- 0.5
+eg1 <- pwr2n.LR(method = "schoenfeld", lambda0 = lmd0,
+  lambda1 = lmd0*HR, entry = t_enrl, fup = t_fup)
+```
+
+## Example 3 - sample size under nonproportional hazard
+
+Design setting: patients are enrolled within 12 months and the last
+enrolled patient has at least 18 months’ follow-up. The medial survival
+time for control group is 12 months. The treatment has delayed effects.
+The hazard ratio is 0.75 after 6 months. Maxcombo test is used.
+
+``` r
+t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
+f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
+ k = 10, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
+```
+
+## Example 4 - trial data simulation
+
+A time-to-event data set with settings in example 3 is simulated.
+
+``` r
+N <- round(snph1$totalN, digits = 0)
+set.seed(12345)
+simu1 <- simu.trial(type = "time", trial_param = c(N,t_enrl,
+  t_fup), bsl_dist = "weibull", bsl_param = c(1,lmd0),
+  HR_fun = f_hr_delay, ratio = 1)
+```
+
+More functions can be found in the package.

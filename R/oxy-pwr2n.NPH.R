@@ -1,13 +1,14 @@
 
 
 ###input parameters
-#' @title Sample Size Calculation with Maximum Weighted Logrank Test
+#' @title Sample Size Calculation with Combination Test
 #'
 #' @description \code{pwr2n.NPH} calculates the number of events and
 #' subjects required to achieve pre-specified power in the setup of two groups.
 #' The method extends the calculation in the framework of the Markov model by Lakatos, allowing
-#' for using the maximum weighted logrank tests with an arbitrary number of weight
-#' functions. If only one weight function is provided, the test is essentially
+#' for using the maximum weighted logrank tests or projection test with an arbitrary number of weight
+#' functions. For maximum weighted logrank type test, if only one weight function
+#' is provided, the test is essentially
 #' the classic (weighted) logrank test.
 #' @param method a text specifying the calculation method, either
 #' \code{"MaxLR"} or \code{"Projection"}. Maximum weighted
@@ -96,6 +97,11 @@
 #'\eqn{H_0: \Lambda_1 < \Lambda_0} against \eqn{H_a: \Lambda_1 >= \Lambda_0}.
 #'
 #' @references
+#'
+#' Brendel, M., Janssen, A., Mayer, C. D., & Pauly, M. (2014). Weighted logrank
+#' permutation tests for randomly right censored life science data. Scandinavian
+#' Journal of Statistics, 41(3), 742-761.
+#'
 #' Cheng, H., & He, J. (2021). A Maximum Weighted Logrank Test in Detecting
 #' Crossing Hazards. arXiv preprint arXiv:2110.03833.
 #'
@@ -104,6 +110,8 @@
 #'  logrank test under non-proportional hazards (to submit)
 #' @examples
 #' \dontrun{
+#'  #------------------------------------------------------------
+#'  #Delayed treatment effects using maxcombo test
 #'  ## generate a list of weight functions for maxcombot test
 #'  wmax <- gen.wgt(method = "Maxcombo" )
 #'  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
@@ -113,19 +121,29 @@
 #'  snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
 #'                     k = 10, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
 #'
+#'  #-------------------------------------------------------------
+#'  # same setting using projection test
+#'  snph2 <- pwr2n.NPH(method = "projection", entry = t_enrl,
+#'   fup = t_fup, Wlist = wmax, k = 10, ratio = 2, CtrlHaz = f_haz0,
+#'   hazR = f_hr_delay)
+#'
+#'  #-------------------------------------------------------------
 #'  #proportional hazards with weibull survival for control group
 #'  #logrank test
 #'  wlr <- gen.wgt(method = "LR" )
 #'  b0 <- 3
-#' th0 <- 10/(-log(0.2))^(1/b0)
-#' #Weibull hazard function
-#' f_hz_weibull <- function(x){b0/th0^b0*x^(b0-1)}
-#' #hazard ratio function
-#' f_hr <- function(x){0.5*x^0}
-#' # define entry and follow-up time
-#' t_enrl <- 5; t_fup <- 5
-#' exph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, k = 100, Wlist = wlr,
-#'    CtrlHaz = f_hz_weibull, hazR = f_hr, summary = FALSE)
+#'  th0 <- 10/(-log(0.2))^(1/b0)
+#'  #Weibull hazard function
+#'  f_hz_weibull <- function(x){b0/th0^b0*x^(b0-1)}
+#'  #hazard ratio function
+#'  f_hr <- function(x){0.5*x^0}
+#'  # define entry and follow-up time
+#'  t_enrl <- 5; t_fup <- 5
+#'  exph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, k = 100,
+#'  Wlist = wlr,  CtrlHaz = f_hz_weibull, hazR = f_hr, summary = FALSE)
+#'  summary(exph1)
+#'
+#'
 #'
 #' }
 #' @seealso
@@ -326,11 +344,12 @@ pwr2n.NPH<- function(method = "MaxLR"
 #' @title Summary of the \code{pwr2n.NPH} function
 #' @description Summarize the results of \code{pwr2n.NPH} function
 #' @param object object of the \code{pwr2n.NPH} function
+#' @param ... additional arguments passed to the summary function
 #' @seealso
 #'  \code{\link{pwr2n.NPH}}
 #' @rdname summary.NPHpwr
 #' @export
-summary.NPHpwr <- function(object){
+summary.NPHpwr <- function(object,...){
    summary <- object$summaryout
    wl  <- lapply(object$inputfun$Weightfunctions,deparse)
    wlc <- paste0(noquote(unlist(noquote(lapply(wl,"[",3)))),collapse=";")
@@ -349,7 +368,7 @@ summary.NPHpwr <- function(object){
   cat("------------------------------------------ \n ")
   cat("-----Summary of the Output Parameters----- \n ")
   cat("------------------------------------------ \n ")
-  print(output, row.names = FALSE, right=FALSE, , justify = "left")
+  print(output, row.names = FALSE, right=FALSE,  justify = "left")
   cat("------------------------------------------ \n ")
   cat("Notes: the base (x) of weight function is \n K-M estimate of CDF ")
 }
@@ -361,7 +380,7 @@ summary.NPHpwr <- function(object){
 #' Calculation
 #' @description Displays graphs of survival, hazards, drop-out and censor over time
 #' as specified in the calculation.
-#' @param object object of the \code{pwr2n.NPH} function
+#' @param x object of the \code{pwr2n.NPH} function
 #' @param type a vector of string, specifying the graphs to display. The options
 #' include "\code{hazard}", "\code{survival}", "\code{dropout}",
 #'  "\code{event}", and
@@ -373,10 +392,10 @@ summary.NPHpwr <- function(object){
 #' @details
 #' The \code{type} argument provides five options to visualize the trial in design.
 #' Option \code{survival} shows the survival probabilities of treatment and control
-#' group over time. option \code{hazard} provides the hazard rates and hazard ratio
-#' over time.option \code{dropout} shows the proportion of drop-out subjects across
+#' group over time. Option \code{hazard} provides the hazard rates and hazard ratio
+#' over time. Option \code{dropout} shows the proportion of drop-out subjects across
 #' the trial duration.
-#' option \code{censor} shows the proportion of censored subjects over time.
+#' Option \code{censor} shows the proportion of censored subjects over time.
 #' @examples
 #' \dontrun{
 #' # generate a list of weight functions for maxcombo test
@@ -397,10 +416,10 @@ summary.NPHpwr <- function(object){
 #'  \code{\link{pwr2n.NPH}}
 #' @rdname plot.NPHpwr
 #' @export
-plot.NPHpwr<- function(object,type=c("hazard","survival","dropout","event","censor"),...) {
-  datM <- object$pdat
-  totalN <- object$totalN
-  ratio <- object$RandomizationRatio
+plot.NPHpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),...) {
+  datM <- x$pdat
+  totalN <- x$totalN
+  ratio <- x$RandomizationRatio
   tval <-1
   if( missing(type)){ tval <- 0}
   ## draw the survival curves

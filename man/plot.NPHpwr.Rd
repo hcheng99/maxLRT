@@ -5,10 +5,10 @@
 \title{Graphical Display of Design Parameters in Sample Size
 Calculation}
 \usage{
-\method{plot}{NPHpwr}(object, type = c("hazard", "survival", "dropout", "event", "censor"), ...)
+\method{plot}{NPHpwr}(x, type = c("hazard", "survival", "dropout", "event", "censor"), ...)
 }
 \arguments{
-\item{object}{object of the \code{pwr2n.NPH} function}
+\item{x}{object of the \code{pwr2n.NPH} function}
 
 \item{type}{a vector of string, specifying the graphs to display. The options
 include "\code{hazard}", "\code{survival}", "\code{dropout}",
@@ -28,10 +28,10 @@ as specified in the calculation.
 \details{
 The \code{type} argument provides five options to visualize the trial in design.
 Option \code{survival} shows the survival probabilities of treatment and control
-group over time. option \code{hazard} provides the hazard rates and hazard ratio
-over time.option \code{dropout} shows the proportion of drop-out subjects across
+group over time. Option \code{hazard} provides the hazard rates and hazard ratio
+over time. Option \code{dropout} shows the proportion of drop-out subjects across
 the trial duration.
-option \code{censor} shows the proportion of censored subjects over time.
+Option \code{censor} shows the proportion of censored subjects over time.
 }
 \examples{
 \dontrun{

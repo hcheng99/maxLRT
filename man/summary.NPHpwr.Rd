@@ -4,10 +4,12 @@
 \alias{summary.NPHpwr}
 \title{Summary of the \code{pwr2n.NPH} function}
 \usage{
-\method{summary}{NPHpwr}(object)
+\method{summary}{NPHpwr}(object, ...)
 }
 \arguments{
 \item{object}{object of the \code{pwr2n.NPH} function}
+
+\item{...}{additional arguments passed to the summary function}
 }
 \description{
 Summarize the results of \code{pwr2n.NPH} function

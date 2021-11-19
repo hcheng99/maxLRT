@@ -34,7 +34,8 @@ The base functions are the same as those described in function
 \code{MaxLRtest}. The method detail can be found in Brendel (2014)
 paper. The main idea is to map the multiple weighted logrank statistics
 into a chi-square distribution. The degree freedom of the chi-square
-is the rank of the generalized inverse of covariance matrix.
+is the rank of the generalized inverse of covariance matrix. Only two-sided
+test is supported in the current function.
 }
 \examples{
 \dontrun{

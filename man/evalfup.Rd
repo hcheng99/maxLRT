@@ -24,7 +24,7 @@ evalfup(
 
 \item{size}{an integer specifying the planned total sample size}
 
-\item{increment}{a numeric value as an increment number used for creating
+\item{increment}{a numeric value specifying an increment number used for creating
 a sequence of duration times in plotting, Default: 0.5}
 
 \item{xlabel}{a text for labeling the x axis in the plot, Default: 'Follow-up Time'}
@@ -53,30 +53,34 @@ achieve the the same power
 \details{
 The \code{evalfun} function helps to evaluate the relationship between
 sample size/event number and follow-up duration. It retrieves the trial
-design information for the \code{object} returned by \code{pwr2n.NPH}
+design information from the \code{object} returned by \code{pwr2n.NPH}
 function. A sequence of follow-up times starting from \code{lower.time}
 and ending with \code{upper.time} are generated. The number of subjects and
 number of events required for achieving the specified power in \code{object}
-are calculated at each time points. An interpolation function \code{approx}
+are calculated at each time point. An interpolation function \code{approx}
 from \pkg{stats} is applied to smooth the curves. In case of
 proportional hazards, the follow-up duration has little impact on the
-event number except for variations from numeric approximation, while in
+event number except for variations from numeric approximations, while in
 case of nonproportional hazards, the follow-up time imposes an important impact
 on both the total sample size and event number.
 }
 \examples{
 \dontrun{
 # define design parameters
-t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
-#define hazard ratio function
-f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
-# perform sample size calculation
-snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wlr,
-                    k = 100, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay
-)
+  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
+# define hazard ratio function
+  f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+# perform sample size calculation using logrank test
+# generate weight for test
+  wlr <- gen.wgt(method="LR")
+  snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wlr,
+                    k = 100, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
+
+# suppose the follow-up duration that are taken into consideration ranges
+# from 12 to 24. The planned number of patients to recruit 2200.
 # draw the graph
-efun <- evalfup(snph1,lower.time = 12, upper.time = 24, size = 2200,
-               title = NULL
-)
+  efun <- evalfup(snph1,lower.time = 12, upper.time = 24, size = 2200,
+               title = NULL)
+  #
 }
 }

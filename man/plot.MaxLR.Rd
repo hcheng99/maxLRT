@@ -19,6 +19,9 @@ Display weight functions used in the function \code{MaxLRtest}
 }
 \examples{
 \dontrun{
-See examples in the help file of function \code{MaxLRtest}
+See examples in the help file of function MaxLRtest
 }
+}
+\seealso{
+\code{\link{MaxLRtest}}
 }

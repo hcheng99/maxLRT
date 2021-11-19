@@ -11,17 +11,37 @@ n2pwr.NPH<- function(method = "MaxLR"
                      ,Wlist
                      ,entry_pdf0=function(x){(1/entry)*(x>=0&x<=entry)}
                      ,entry_pdf1=entry_pdf0
-                     ,eventN
-                     ,totalN
+                     ,eventN = NULL
+                     ,totalN = NULL
                      ,ratio    = 1
                      ,alpha    = 0.05
-                     ,alternative=c("two.sided","less","greater")
+                     ,alternative=c("two.sided")
                      ,k        = 100
-                     ,criteria = 100
 ){
-  if (missing(eventN)&missing(totalN)){
-    stop("At least one of eventN/totalN must be provided")
+  if (is.null(eventN)) {
+    mce <- 1
+    old.event <- NA
   }
+  else {
+    mce <- 0
+    old.event <- eventN
+  }
+  if (is.null(totalN)) {
+    mct <- 1
+    old.total <- NA
+  }else {
+    mct <- 0
+    old.total <- totalN
+  }
+
+  if (mce+mct==2){
+    stop("At least one of eventN/totalN must be provided")
+  }else if (mce+mct==0){
+    message("Both number of events and number of subjects are specified.
+             The asymptotic power is calculated based on number of events.")
+  }
+
+  old.total <- totalN
   tot_time <- entry+fup
   num <- k*tot_time
   # create the subintervals
@@ -38,8 +58,8 @@ n2pwr.NPH<- function(method = "MaxLR"
 
   pdat <- load$pdat
   eprob <- stats::weighted.mean(c(pdat$C_E[num],pdat$E_E[num]),w=c(1,ratio))
-  if (missing(eventN)){ eventN <- round(totalN*eprob)}
-  if (missing(totalN)){ totalN <- round(eventN/eprob)}
+  if (mce==1){ eventN <- round(totalN*eprob)}
+  if (mct==1|mce+mct==0){ totalN <- round(eventN/eprob)}
   wn <- length(Wlist)
   W <- matrix(NA,nrow=nrow(pdat),ncol=wn)
   ## calculate the variance-covariance matrix
@@ -86,7 +106,7 @@ n2pwr.NPH<- function(method = "MaxLR"
   }
   else if (method == "Projection"){
     if (alternative!="two.sided"){
-      cat(c("note: only two-sided is supported for projection test."))
+      message(c("note: only two-sided is supported for projection test."))
     }
     ## get the rank of the variance matrix
     mu <- as.vector(dnum*t(W)%*%(pdat$rho*pdat$gamma))
@@ -97,11 +117,14 @@ n2pwr.NPH<- function(method = "MaxLR"
     power <- stats::pchisq(crit,df=vr,ncp=lmd,lower.tail = FALSE)
 
   }
-
+  inn <- c(old.event, old.total)
+  names(inn) <- c("event","total")
+  outn <- c(eventN, totalN)
+  names(outn) <- c("event","total")
 
   listall <- list( power = as.numeric(power)
-                   ,eventN  = eventN
-                   ,totalN = totalN
+                   ,inN  = inn
+                   ,outN = outn
                    ,prob_event =eprob
                    ,L_trans = load$L_trans
                    ,pdat = pdat
@@ -114,4 +137,3 @@ n2pwr.NPH<- function(method = "MaxLR"
 
 
 }
-

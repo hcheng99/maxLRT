@@ -5,26 +5,26 @@ evalfup <- function(object, lower.time, upper.time, size,
                     increment=0.5, xlabel = "Follow-up Time",
                     ylabel = "Total Sample Size/Event Number",
                     title = "Relationship between Follow-up and \n Total Sample Size"
-                    ){
+){
   fupseq <- seq(from=lower.time, to=upper.time, by=increment)
   N <- c()
   D <- c()
   for (i in 1: length(fupseq)){
     #print(fupseq[i])
-    tmp <- pwr2n.maxLR(entry     = object$studytime[1]
-                ,fup      = fupseq[i]
-                ,k        = object$inputfun$k
-                ,ratio    = object$RandomizationRatio
-                ,Wlist  = object$inputfun$Weightfunctions
-                ,CtrlHaz=object$inputfun$controalhazard
-                ,transP1=object$inputfun$transP1
-                ,transP0=object$inputfun$transP0
-                ,hazR     = object$inputfun$hazardratio
-                ,alpha    = object$inputfun$alpha
-                ,beta     = object$inputfun$beta
-                ,entry_pdf0=object$inputfun$entrypdf0
-                ,entry_pdf1 =object$inputfun$entry_pdf1
-                ,summary=FALSE
+    tmp <- pwr2n.NPH(entry     = object$studytime[1]
+                     ,fup      = fupseq[i]
+                     ,k        = object$inputfun$k
+                     ,ratio    = object$RandomizationRatio
+                     ,Wlist  = object$inputfun$Weightfunctions
+                     ,CtrlHaz=object$inputfun$controalhazard
+                     ,transP1=object$inputfun$transP1
+                     ,transP0=object$inputfun$transP0
+                     ,hazR     = object$inputfun$hazardratio
+                     ,alpha    = object$inputfun$alpha
+                     ,beta     = object$inputfun$beta
+                     ,entry_pdf0=object$inputfun$entrypdf0
+                     ,entry_pdf1 =object$inputfun$entry_pdf1
+                     ,summary=FALSE
     )
     N <-c(N,tmp$totalN)
     D <- c(D,tmp$eventN)
@@ -34,11 +34,10 @@ evalfup <- function(object, lower.time, upper.time, size,
   ymax <- max(size,Nint)
   ymin <- min(size,Nint)
   if (max(Nint)<size){
-    cat("The largest required sample size (",max(Nint),") is less than the target
-        sampe size", size, ". Consider reduce the follow-up time")
+    message("The largest required sample size ( ",max(Nint)," ) is less than the target  sampe size ", size, ". Consider reduce the follow-up time")
+
   }else if (min(Nint) >size){
-    cat("The smallest required sample size (",min(Nint),") is greater than the target
-        sampe size", size, ". Consider increase the follow-up time")
+    message("The smallest required sample size ( ",min(Nint)," ) is greater than the target  sampe size ", size, ". Consider increase the follow-up time")
   }
   flag <-  (max(Nint)<size)|(min(Nint) >size)
   interp <- stats::approx(fupseq,y=Nint,method="linear")
@@ -63,13 +62,13 @@ evalfup <- function(object, lower.time, upper.time, size,
     graphics::segments(x0=xsize,x1=xsize,y0=0,y1=size,lty=2)
     graphics::segments(x0=0,x1=xsize,y0=size,y1=size,lty=2)
     graphics::text(paste0("(",round(xsize,digits = 1),", ",size,")"),x=xsize+move,
-         y=size*1.05,cex=0.7)
+                   y=size*1.05,cex=0.7)
   }
 
   legend("topright",legend=c("Orignal N","Interpolated N", "Event Number"),
          pch=c(1, 16, 17),
          col=c("red","black","blue"),cex=c(0.8))
- # return values
+  # return values
   original <- list(x=fupseq,y=N)
   return(list(
     approx.time = xsize,
