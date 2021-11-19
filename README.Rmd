@@ -25,9 +25,13 @@ Package: nphPower provides functions to perform combination test including maxim
 
 You can install the released version of nphPower from [CRAN](https://CRAN.R-project.org) with:
 
+```
+install.packages("nphPower")
+```
 ``` {r}
-#install.packages("nphPower")
+
 library("nphPower")
+
 ```
 
 And the development version from [GitHub](https://github.com/) with:
@@ -49,9 +53,9 @@ Generate the weight functions for maxcombo test
 ```{r}
 wmax <- gen.wgt(method = "Maxcombo")
 ```
-Perform the test using pooled Kalpan-Meier estimate of CDF as base function and visualize the weight functions 
+Perform the test using pooled Kaplan-Meier estimate of CDF as base function and visualize the weight functions 
 
-```{r}
+```{r, fig.width=4, fig.width=5}
 t1 <- MaxLRtest(tmpd, Wlist = wmax, base = c("KM"),
   alternative = c("two.sided"))
 plot(t1)
@@ -74,6 +78,7 @@ Maxcombo test is used.
 ```{r}
 t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
 f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+f_haz0 <- function(x){lmd0*x^0}
 snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
  k = 50, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
 ```

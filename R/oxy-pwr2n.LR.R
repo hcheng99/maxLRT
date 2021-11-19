@@ -211,7 +211,7 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
 #' a list of components:
 #' \item{ep1}{event rate for treatment group}
 #' \item{ep0}{event rate for control group}
-#' \item{ep}{mean event rate weithed by the randomization ratio}
+#' \item{ep}{mean event rate weighted by the randomization ratio}
 #' @details
 #' The event rate is calculated based on the following assumptions: 1)
 #' patients are uniformly enrolled within \code{entry} time; 2) survival

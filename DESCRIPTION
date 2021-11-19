@@ -1,21 +1,21 @@
 Package: nphPower
-Title: Sample Size Calculation under Non-proportional Hazards
-Version: 0.1.0.9000
+Title: Sample Size Calculation under Non-Proportional Hazards
+Version: 1.0.0
 Authors@R: 
     person(given = "Huan",
            family = "Cheng",
            role = c("aut", "cre"),
-           email = "hcheng1118@Hotmail.com",
+           email = "hcheng1118@hotmail.com",
            comment = c(ORCID = "0000-0002-2552-7656"))
-Description: performs combination tests and sample size calculation for 
+Description: Performs combination tests and sample size calculation for 
    fixed design with survival endpoints using combination tests under either
-   proportional hazards or nonproportional hazards. The combination tests 
-   include maximum weighted logrank test and projection test. The sample 
-   size calculation procedure is very flexibile, allowing for user-defined
+   proportional hazards or non-proportional hazards. The combination tests 
+   include maximum weighted log-rank test and projection test. The sample 
+   size calculation procedure is very flexible, allowing for user-defined
    hazard ratio function and considering various trial conditions like 
-   staggered enry, drop-out etc. Trial simulation function is also provided 
-   to faciliate the empirical power calculation. 
-License: MIT + file LICENSE
+   staggered entry, drop-out etc. Trial simulation function is also provided 
+   to facilitate the empirical power calculation. 
+License: GPL (>= 2) 
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -28,10 +28,7 @@ Imports:
     zoo
 Suggests: 
     rmarkdown,
-    knitr,
-    testthat (>= 3.0.0)
-Config/testthat/edition: 3
+    knitr
 URL: https://github.com/hcheng99/nphPower
 Depends: 
     R (>= 2.10)
-VignetteBuilder: knitr

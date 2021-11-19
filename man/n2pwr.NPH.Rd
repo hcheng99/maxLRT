@@ -82,7 +82,7 @@ a list of components:
 \item{outN}{a vector including the output of number of events
 and total sample. See details. }
 \item{prob_event}{event probability at the end of trial}
-\item{L_trans}{a list, consisting of tranisition matrix at each inteval}
+\item{L_trans}{a list, consisting of transition matrix at each interval}
 \item{pdat}{ a data frame including all the intermediate variables in the calculation.
 }
 \item{studytime}{a vector of length 2, including the entry and follow-up time as input}

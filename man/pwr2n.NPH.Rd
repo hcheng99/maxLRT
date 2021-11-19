@@ -92,7 +92,7 @@ The object is a list containing the following components:
 \item{totalN}{total number of subjects}
 \item{pwr}{actual power given the number of events}
 \item{prob_event}{event probability at the end of trial}
-\item{L_trans}{a list, consisting of tranisition matrix at each inteval}
+\item{L_trans}{a list, consisting of transition matrix at each interval}
 \item{pdat}{ a data frame including all the intermediate variables in the calculation.
 see Details.}
 \item{studytime}{a vector of length 2, including the entry and follow-up time as input}

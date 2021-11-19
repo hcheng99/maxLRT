@@ -18,15 +18,11 @@ and to simulate survival data with flexible design input.
 You can install the released version of nphPower from
 [CRAN](https://CRAN.R-project.org) with:
 
+    install.packages("nphPower")
+
 ``` r
-#install.packages("nphPower")
+
 library("nphPower")
-library("survival")
-#> 
-#> Attaching package: 'survival'
-#> The following object is masked from 'package:nphPower':
-#> 
-#>     lung
 ```
 
 And the development version from [GitHub](https://github.com/) with:
@@ -54,7 +50,7 @@ Generate the weight functions for maxcombo test
 wmax <- gen.wgt(method = "Maxcombo")
 ```
 
-Perform the test using pooled Kalpan-Meier estimate of CDF as base
+Perform the test using pooled Kaplan-Meier estimate of CDF as base
 function and visualize the weight functions
 
 ``` r
@@ -120,8 +116,8 @@ snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
 #>  Number of Weights         4
 #> -----Summary of the Output Parameters----- 
 #>                    parameter    value
-#>            Number of Events 1197.779
-#>  Number of Total Sampe Size 1719.531
+#>            Number of Events 1198.779
+#>  Number of Total Sampe Size 1720.967
 #>            Asymptotic Power    0.900
 #>          Overall Event Rate    0.697
 ```
@@ -142,8 +138,8 @@ simu1 <- simu.trial(type = "time", trial_param = c(N,t_enrl,
 #> 1             Trial Type:  time
 #> 2             Entry Time:    12
 #> 3 Maximum Study Duration:    30
-#> 4     Number of Subjects:  1720
-#> 5       Number of Events:  1263
+#> 4     Number of Subjects:  1721
+#> 5       Number of Events:  1259
 ```
 
 More functions can be found in the package.

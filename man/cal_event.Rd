@@ -25,7 +25,7 @@ cal_event(ratio, lambda1, lambda0, entry, fup, l_shape, l_scale)
 a list of components:
 \item{ep1}{event rate for treatment group}
 \item{ep0}{event rate for control group}
-\item{ep}{mean event rate weithed by the randomization ratio}
+\item{ep}{mean event rate weighted by the randomization ratio}
 }
 \description{
 Calculate the event rate given the hazards and drop-out

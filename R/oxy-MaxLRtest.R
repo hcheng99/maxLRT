@@ -32,7 +32,7 @@
 #' \item{p.value}{a numeric value indicating the p-value of the test}
 #' @details
 #' \code{MaxLRtest} function performs logrank, weighted logrank test such as
-#' Flemming-Harrigton test and maximum weighted logrank test depending on
+#' Fleming-Harrington test and maximum weighted logrank test depending on
 #' the type and number of weight functions. Let \eqn{w(x_t)} denote the weight applied
 #' at event time point \eqn{t}, where \eqn{x_t} is the base function. There are three options
 #' for \code{base}. If \code{KM} is used, \eqn{x_t=1-S_t}, where \eqn{S_t}
