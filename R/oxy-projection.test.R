@@ -9,9 +9,10 @@
 #' @param base a text must be one of c("\code{KM}","\code{Combined}","\code{N}"), Default: c("KM")
 #' @param alpha a number indicating type I error rate, Default: 0.05
 #' @return
-#' \item{chisq}{chi-square statistic}
-#' \item{df.chis}{degree freedom of the test}
-#' \item{pvalue}{p-value of the test }
+#' a list of components including
+#' \item{chisq}{a numeric value indicating the chi-square statistic}
+#' \item{df.chis}{a numeric value indicating the degree freedom of the test}
+#' \item{pvalue}{a numeric value giving the p-value of the test }
 #' \item{details}{a data frame consisting of statistics from multiple
 #' weight functions and the variance-covariance matrix}
 #' @details
@@ -26,8 +27,8 @@
 #' permutation tests for randomly right censored life science
 #' data. Scandinavian Journal of Statistics, 41(3), 742-761.
 #' @examples
-#' \dontrun{
-#' lung <- maxLRT::lung
+#' # load and prepare data
+#' data(lung)
 #' tmpd <- with(lung, data.frame(time=SurvTime,stat=1-censor,grp=Treatment))
 #' # two weight functions are defined.
 #' # one is constant weight; the other emphasize diverging hazards
@@ -35,7 +36,6 @@
 #' timef2 <- function(x){(x)}
 #' test1 <- projection.test(tmpd,list(timef1,timef2),base="KM")
 #' test1$chisq; test1$pvalue; test1$df.chisq
-#' }
 #' @seealso
 #'  \code{\link{MaxLRtest}}
 #' @rdname projection.test

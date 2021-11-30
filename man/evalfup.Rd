@@ -65,11 +65,14 @@ case of nonproportional hazards, the follow-up time imposes an important impact
 on both the total sample size and event number.
 }
 \examples{
-\dontrun{
+# The following code takes more than 5 seconds to run.
+\donttest{
 # define design parameters
   t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
 # define hazard ratio function
   f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
+# define control hazard
+  f_haz0 <- function(x){lmd0*x^0}
 # perform sample size calculation using logrank test
 # generate weight for test
   wlr <- gen.wgt(method="LR")
@@ -81,6 +84,5 @@ on both the total sample size and event number.
 # draw the graph
   efun <- evalfup(snph1,lower.time = 12, upper.time = 24, size = 2200,
                title = NULL)
-  #
 }
 }

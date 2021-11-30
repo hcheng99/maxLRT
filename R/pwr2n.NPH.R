@@ -19,9 +19,13 @@ pwr2n.NPH<- function(method = "MaxLR"
                      ,summary = TRUE
 ){
 
-  if (!alternative %in% c("two.sided","greater","less")){
-    stop("The alternative must be one of 'two.sided','greater','less'.")
+  if (!method %in% c("MaxLR","Projection")){
+    stop("The 'method' must be one of 'MaxLR','Projection'.")
   }
+  if (!alternative %in% c("two.sided","greater","less")){
+    stop("The 'alternative' must be one of 'two.sided','greater','less'.")
+  }
+
   tot_time <- entry+fup
   num <- k*tot_time
   # create the subintervals
@@ -206,7 +210,7 @@ summary.NPHpwr <- function(object,...){
   cat("------------------------------------------ \n ")
   cat("-----Summary of the Output Parameters----- \n ")
   cat("------------------------------------------ \n ")
-  print(output, row.names = FALSE, right=FALSE, , justify = "left")
+  print(output, row.names = FALSE, right=FALSE,  justify = "left")
   cat("------------------------------------------ \n ")
   cat("Notes: the base (x) of weight function is \n K-M estimate of CDF ")
 }
@@ -219,8 +223,7 @@ summary.NPHpwr <- function(object,...){
 #*********************************************
 #*show the survival plot/ hazards plots
 #*********************************************
-plot.NPHpwr<- function(x,type=c("hazard","survival","dropout",
-                                "event","censor"),...) {
+plot.NPHpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),...) {
   datM <- x$pdat
   totalN <- x$totalN
   ratio <- x$RandomizationRatio
@@ -229,7 +232,7 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout",
   ## draw the survival curves
   if (tval==0|"survival" %in% type ){
     with(datM,{
-      plot(ti,S1,cex=0.1,lty=1,ylim=c(0,1),col=1,xlab="Time",
+      plot(ti,S1,cex=0.1,lty=1,ylim=c(0,1),col=1,xlab="Analysis Time",
            ylab="Survival Probability",main="Survival Curves",...)
       graphics::lines(ti,S0,col=2,lty=2,...)
       graphics::legend("bottomleft",legend=c("treatment","control"),
@@ -243,7 +246,7 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout",
 
     ymax <- max(c(datM$hazard_C,datM$hazard_E))*1.1
     with(datM,{
-      plot(ti,hazard_E,cex=0.1,lty=1,col=1,xlab="Time",ylab="Hazard Rate",
+      plot(ti,hazard_E,cex=0.1,lty=1,col=1,xlab="Analysis Time",ylab="Hazard Rate",
            ylim=c(0,ymax),main="Hazard Curves",...)
       graphics::lines(ti,hazard_C,col=2,lty=2,...)
       graphics::legend("bottomright",legend=c("treatment","control"),
@@ -251,10 +254,10 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout",
     })
     ## hazard ratio
     with(datM,{
-      plot(ti,theta,cex=0.1,lty=1,col=1,xlab="Time",
+      plot(ti,theta,cex=0.1,lty=1,col=1,xlab="Analysis Time",
            ylim=c(min(theta)*0.9,max(theta)*1.1),
            ylab="Hazard Ratio (treatment over control)",
-           main="Hazard Ratio over Time",...)
+           main="Hazard Ratio",...)
 
 
     })
@@ -264,8 +267,8 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout",
   if (tval==0|"dropout" %in% type){
     ymax <- max(c(datM$E_L,datM$C_L))*1.1
     with(datM,{
-      plot(ti,E_L,cex=0.1,lty=1,col=1,xlab="Time",ylab="proporion of drop out",
-           ylim=c(0,ymax),main="Drop-out overtime",...)
+      plot(ti,E_L,cex=0.1,lty=1,col=1,xlab="Analysis Time",ylab="Proporion of drop out",
+           ylim=c(0,ymax),main="Drop-out",...)
       graphics::lines(ti,C_L,col=2,lty=2,...)
       graphics::legend("topleft",legend=c("treatment","control"),
                        col=1:2,lty=1:2,cex=0.8)
@@ -275,9 +278,9 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout",
   if (tval==0|"censor" %in% type){
     ymax <- max(c(datM$E_C,datM$C_C))*1.1
     with(datM,{
-      plot(ti,E_C,cex=0.1,lty=1,col=1,xlab="Time",
+      plot(ti,E_C,cex=0.1,lty=1,col=1,xlab="Analysis Time",
            ylab="proporion of censor",
-           ylim=c(0,ymax),main="Administrative censoring overtime",...)
+           ylim=c(0,ymax),main="Administrative Censoring",...)
       graphics::lines(ti,C_C,col=2,lty=2,...)
       graphics::legend("topleft",legend=c("treatment","control"),
                        col=1:2,lty=1:2,cex=0.8)
@@ -286,9 +289,9 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout",
   ##event number
   if (tval==0|"event" %in% type ){
     with(datM,{
-      plot(ti,round(eprob*totalN,digits=0),cex=0.1,lty=1,col=1,xlab="Time",
-           ylab="number of events",
-           main="Events over time",...)
+      plot(ti,round(eprob*totalN,digits=0),cex=0.1,lty=1,col=1,xlab="Analysis Time",
+           ylab="Number of events",
+           main="Events",...)
       graphics::lines(ti,round(E_E*totalN*ratio/(ratio+1),digits=0),col=2,lty=2,...)
       graphics::lines(ti,round(C_E*totalN/(ratio+1),digits=0),col=3,lty=3,...)
       graphics::legend("topleft",legend=c("overall","treatment","control"),

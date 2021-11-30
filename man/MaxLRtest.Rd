@@ -39,7 +39,7 @@ of absolute values of all the statistics. }
 \item{stat.mat}{a matrix with the first column showing weighted
 logrank test statistics and other columns displaying the variance and
 covariance between statistics}
-\item{critV}{a value indicating the critical value corresponding to the nominal
+\item{critV}{a numeric value indicating the critical value corresponding to the nominal
 level - \code{alpha}}
 \item{details}{a dataframe showing the intermediate variables used in the
 calculation. }
@@ -79,22 +79,21 @@ Because the algorithm is slightly seed-dependent,the p-value and critical value
 is the average of 10 runs.
 }
 \examples{
-\dontrun{
 data(lung)
 #Only keep variables for analysis
 tmpd <- with(lung, data.frame(time=SurvTime,stat=1-censor,grp=Treatment))
 #logrank test
 wlr <- gen.wgt(method = "LR")
-t1 <- MaxLRtest(tmpd, Wlist = lwlr, base = c("KM") )
+t1 <- MaxLRtest(tmpd, Wlist = wlr, base = c("KM") )
 t1$stat ;t1$p.value
 
 
 # maxcombo test
+wmax <- gen.wgt(method="Maxcombo")
 t2 <- MaxLRtest(tmpd, Wlist = wmax, base = c("KM") )
 t2$stat ;t2$p.value
 #visualize the weight functions
 plot(t2)
-}
 }
 \seealso{
 \code{\link{pwr2n.NPH}}, \code{\link{gen.wgt}}

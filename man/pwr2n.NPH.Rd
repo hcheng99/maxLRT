@@ -93,7 +93,7 @@ The object is a list containing the following components:
 \item{pwr}{actual power given the number of events}
 \item{prob_event}{event probability at the end of trial}
 \item{L_trans}{a list, consisting of transition matrix at each interval}
-\item{pdat}{ a data frame including all the intermediate variables in the calculation.
+\item{pdat}{ a dataframe including all the intermediate variables in the calculation.
 see Details.}
 \item{studytime}{a vector of length 2, including the entry and follow-up time as input}
 \item{RandomizationRatio}{as input}
@@ -139,21 +139,22 @@ treatment and control group. The \code{less} option tests
 \eqn{H_0: \Lambda_1 < \Lambda_0} against \eqn{H_a: \Lambda_1 >= \Lambda_0}.
 }
 \examples{
-\dontrun{
  #------------------------------------------------------------
- #Delayed treatment effects using maxcombo test
+ ## Delayed treatment effects using maxcombo test
  ## generate a list of weight functions for maxcombot test
  wmax <- gen.wgt(method = "Maxcombo" )
  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
  ## delayed treatment effects
  f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
  f_haz0 <- function(x){lmd0*x^0}
+ ##  The following code takes more than 5 seconds to run
+ \donttest{
  snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
-                    k = 10, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
-
+                    k = 100, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
+ }
  #-------------------------------------------------------------
  # same setting using projection test
- snph2 <- pwr2n.NPH(method = "projection", entry = t_enrl,
+ snph2 <- pwr2n.NPH(method = "Projection", entry = t_enrl,
   fup = t_fup, Wlist = wmax, k = 10, ratio = 2, CtrlHaz = f_haz0,
   hazR = f_hr_delay)
 
@@ -172,10 +173,6 @@ treatment and control group. The \code{less} option tests
  exph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, k = 100,
  Wlist = wlr,  CtrlHaz = f_hz_weibull, hazR = f_hr, summary = FALSE)
  summary(exph1)
-
-
-
-}
 }
 \references{
 Brendel, M., Janssen, A., Mayer, C. D., & Pauly, M. (2014). Weighted logrank

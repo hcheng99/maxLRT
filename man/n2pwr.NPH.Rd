@@ -108,7 +108,6 @@ size is given as \code{eventN}/\eqn{eprob}. However, if both
 Check function \code{pwr2n.NPH} for more calculation details.
 }
 \examples{
-\dontrun{
 # entry time
 t_enrl <- 12
 # follow-up time
@@ -128,7 +127,6 @@ pwr1 <- n2pwr.NPH(entry   = t_enrl
                  ,Wlist = maxc
                  ,eventN = 50 # targeted number of events
 )
-}
 }
 \seealso{
 \code{\link{pwr2n.NPH}}

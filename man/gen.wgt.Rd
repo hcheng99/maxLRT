@@ -18,7 +18,7 @@ must be one or some of c(\code{"LR"}, \code{"FH"}, \code{"Wilcoxon"},
 \code{theta} should be specified. See details. Default: 0.5}
 }
 \value{
-a list of weight functions.
+a list of weight function(s).
 }
 \description{
 Generate commonly used weight functions for \code{MaxLRtest}
@@ -47,15 +47,13 @@ Therefore, if a F(0,1) test is requested, the returned function is
 base functions are increasing over time.
 }
 \examples{
-\dontrun{
 #logrank test
 gen.wgt(method="LR")
 # FH and logrank test
   fn <- gen.wgt(method=c("FH","LR"), param = c(1,1))
 # maximum weighted logrank test proposed by Cheng, including weight
 # for detecting crossing hazards
-  wcross <- gen.wgt(method="Macross", theta = c(0.2))
-}
+  wcross <- gen.wgt(method="Maxcross", theta = c(0.2))
 }
 \references{
 Klein, J. P., & Moeschberger, M. L. (2003). Survival analysis: techniques for

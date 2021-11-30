@@ -12,15 +12,13 @@
 \item{...}{additional graphical arguments passed to the plot function}
 }
 \value{
-plots are produced on the current graphics device
+Plots are produced on the current graphics device
 }
 \description{
 Display weight functions used in the function \code{MaxLRtest}
 }
 \examples{
-\dontrun{
-See examples in the help file of function MaxLRtest
-}
+# See examples in the help file of function MaxLRtest
 }
 \seealso{
 \code{\link{MaxLRtest}}

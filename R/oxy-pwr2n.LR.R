@@ -21,8 +21,9 @@
 #' @param summary a logical controlling whether a brief summary is printed or not
 #' , Default: TRUE
 #' @return
-#' \item{eventN}{The total number of events}
-#' \item{totalN}{The total number of subjects}
+#' a list of components including
+#' \item{eventN}{a numeric value giving the total number of events}
+#' \item{totalN}{a numeric value giving the total number of subjects}
 #' \item{summary}{a list containing the input parameters and output results}
 #' @aliases phsize
 #' @details
@@ -50,8 +51,8 @@
 #' in clinical trials using the logrank test. Statistics in medicine, 1, 121–129.
 
 #' @examples
-#' \dontrun{
-#'l0 <- log(2)/14; HR <- 0.8; RR <- 2; entry <- 12; fup <- 12;
+#' # define design parameters
+#' l0 <- log(2)/14; HR <- 0.8; RR <- 2; entry <- 12; fup <- 12;
 #' eg1 <- pwr2n.LR( method    = c("schoenfeld")
 #'                  ,l0
 #'                  ,l0*HR
@@ -77,7 +78,6 @@
 #' )
 #' # event number, total subjects, event probability
 #' c(eg2$eventN,eg2$totalN,eg2$eventN/eg2$totalN)
-#' }
 #' @seealso
 #'  \code{\link{pwr2n.NPH}},
 #'  \code{\link{evalfup}}, \code{\link{cal_event}}
@@ -228,7 +228,6 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
 #' of drop-out; \eqn{t_{enrl}} is the entry time and \eqn{t_{fup}} is the
 #' follow-up duration.
 #' @examples
-#' \dontrun{
 #' # median survival time for treatment and control: 16 months vs 12  months
 #' # entry time: 12 months ; follow-up time: 18 months
 #' # the shape parameter for weibull drop-out : 0.5
@@ -238,7 +237,6 @@ pwr2n.LR <- function( method    = c("schoenfeld","freedman")
 #'   t_enrl <- 12; t_fup <- 18
 #'
 #'   cal_event(1,l1,l0,t_enrl,t_fup,0.5,100)
-#' }
 #' @rdname cal_event
 #' @export
 cal_event <- function(

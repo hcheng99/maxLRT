@@ -17,9 +17,8 @@
 #' @param hlegend.loc a text indicating the position of legend
 #' for the hazard plot. Default: "bottomleft"
 #' @return
-#' graphic display of hazard and survival functions
+#' graphics of hazard and survival functions
 #' @examples
-#' \dontrun{
 #' # proportional hazards
 #'plotHazSurv(
 #'  bsl_dist=c("weibull")
@@ -38,7 +37,6 @@
 #'  ,tit= c("Hazard Function","Survival Function")
 #'  ,pos=c(1,2)
 #')
-#' }
 #' @rdname plotHazSurv
 #' @export
 #' @importFrom graphics par lines mtext legend

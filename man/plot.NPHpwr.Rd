@@ -34,21 +34,19 @@ the trial duration.
 Option \code{censor} shows the proportion of censored subjects over time.
 }
 \examples{
-\dontrun{
-# generate a list of weight functions for maxcombo test
- wmax <- gen.wgt(method = "Maxcombo" )
+ # generate weight function
+ wlr <- gen.wgt(method = "LR" )
  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
  # delayed treatment effects, the crossign point is at 6.
  f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
  f_haz0 <- function(x){lmd0*x^0}
- snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
-                    k = 10, ratio = 2, CtrlHaz = f_haz0,
+ snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wlr,
+                    k = 100, ratio = 2, CtrlHaz = f_haz0,
                     hazR = f_hr_delay)
  # display the hazards plot only
  plot(snph1, type="hazard")
  # display all plots
  plot(snph1)
-}
 }
 \seealso{
 \code{\link{pwr2n.NPH}}

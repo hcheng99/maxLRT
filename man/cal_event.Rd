@@ -48,7 +48,6 @@ of drop-out; \eqn{t_{enrl}} is the entry time and \eqn{t_{fup}} is the
 follow-up duration.
 }
 \examples{
-\dontrun{
 # median survival time for treatment and control: 16 months vs 12  months
 # entry time: 12 months ; follow-up time: 18 months
 # the shape parameter for weibull drop-out : 0.5
@@ -58,5 +57,4 @@ follow-up duration.
   t_enrl <- 12; t_fup <- 18
 
   cal_event(1,l1,l0,t_enrl,t_fup,0.5,100)
-}
 }

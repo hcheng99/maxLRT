@@ -61,7 +61,7 @@
 #'  \item{pwr}{actual power given the number of events}
 #'  \item{prob_event}{event probability at the end of trial}
 #'  \item{L_trans}{a list, consisting of transition matrix at each interval}
-#'  \item{pdat}{ a data frame including all the intermediate variables in the calculation.
+#'  \item{pdat}{ a dataframe including all the intermediate variables in the calculation.
 #'  see Details.}
 #'  \item{studytime}{a vector of length 2, including the entry and follow-up time as input}
 #'  \item{RandomizationRatio}{as input}
@@ -109,21 +109,22 @@
 #' Cheng, H., & He, J. (2021). Sample size calculation for the maximum weighted
 #'  logrank test under non-proportional hazards (to submit)
 #' @examples
-#' \dontrun{
 #'  #------------------------------------------------------------
-#'  #Delayed treatment effects using maxcombo test
+#'  ## Delayed treatment effects using maxcombo test
 #'  ## generate a list of weight functions for maxcombot test
 #'  wmax <- gen.wgt(method = "Maxcombo" )
 #'  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
 #'  ## delayed treatment effects
 #'  f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
 #'  f_haz0 <- function(x){lmd0*x^0}
+#'  ##  The following code takes more than 5 seconds to run
+#'  \donttest{
 #'  snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
-#'                     k = 10, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
-#'
+#'                     k = 100, ratio = 2, CtrlHaz = f_haz0, hazR = f_hr_delay)
+#'  }
 #'  #-------------------------------------------------------------
 #'  # same setting using projection test
-#'  snph2 <- pwr2n.NPH(method = "projection", entry = t_enrl,
+#'  snph2 <- pwr2n.NPH(method = "Projection", entry = t_enrl,
 #'   fup = t_fup, Wlist = wmax, k = 10, ratio = 2, CtrlHaz = f_haz0,
 #'   hazR = f_hr_delay)
 #'
@@ -142,10 +143,6 @@
 #'  exph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, k = 100,
 #'  Wlist = wlr,  CtrlHaz = f_hz_weibull, hazR = f_hr, summary = FALSE)
 #'  summary(exph1)
-#'
-#'
-#'
-#' }
 #' @seealso
 #'  \code{\link{pwr2n.LR}}
 #'  \code{\link{gen.wgt}}, \code{\link{evalfup}}
@@ -174,9 +171,13 @@ pwr2n.NPH<- function(method = "MaxLR"
                      ,summary = TRUE
 ){
 
-  if (!alternative %in% c("two.sided","greater","less")){
-    stop("The alternative must be one of 'two.sided','greater','less'.")
+  if (!method %in% c("MaxLR","Projection")){
+    stop("The 'method' must be one of 'MaxLR','Projection'.")
   }
+  if (!alternative %in% c("two.sided","greater","less")){
+    stop("The 'alternative' must be one of 'two.sided','greater','less'.")
+  }
+
   tot_time <- entry+fup
   num <- k*tot_time
   # create the subintervals
@@ -342,9 +343,11 @@ pwr2n.NPH<- function(method = "MaxLR"
 
 }
 #' @title Summary of the \code{pwr2n.NPH} function
-#' @description Summarize the results of \code{pwr2n.NPH} function
+#' @description Summarize and print the results of \code{pwr2n.NPH} function
 #' @param object object of the \code{pwr2n.NPH} function
 #' @param ... additional arguments passed to the summary function
+#' @return
+#' No return value. Summary results are printed to Console.
 #' @seealso
 #'  \code{\link{pwr2n.NPH}}
 #' @rdname summary.NPHpwr
@@ -397,21 +400,19 @@ summary.NPHpwr <- function(object,...){
 #' the trial duration.
 #' Option \code{censor} shows the proportion of censored subjects over time.
 #' @examples
-#' \dontrun{
-#' # generate a list of weight functions for maxcombo test
-#'  wmax <- gen.wgt(method = "Maxcombo" )
+#'  # generate weight function
+#'  wlr <- gen.wgt(method = "LR" )
 #'  t_enrl <- 12; t_fup <- 18; lmd0 <- log(2)/12
 #'  # delayed treatment effects, the crossign point is at 6.
 #'  f_hr_delay <- function(x){(x<=6)+(x>6)*0.75}
 #'  f_haz0 <- function(x){lmd0*x^0}
-#'  snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wmax,
-#'                     k = 10, ratio = 2, CtrlHaz = f_haz0,
+#'  snph1 <- pwr2n.NPH(entry = t_enrl, fup = t_fup, Wlist = wlr,
+#'                     k = 100, ratio = 2, CtrlHaz = f_haz0,
 #'                     hazR = f_hr_delay)
 #'  # display the hazards plot only
 #'  plot(snph1, type="hazard")
 #'  # display all plots
 #'  plot(snph1)
-#' }
 #' @seealso
 #'  \code{\link{pwr2n.NPH}}
 #' @rdname plot.NPHpwr
@@ -425,7 +426,7 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),
   ## draw the survival curves
   if (tval==0|"survival" %in% type ){
     with(datM,{
-      plot(ti,S1,cex=0.1,lty=1,ylim=c(0,1),col=1,xlab="Time",
+      plot(ti,S1,cex=0.1,lty=1,ylim=c(0,1),col=1,xlab="Analysis Time",
            ylab="Survival Probability",main="Survival Curves",...)
       graphics::lines(ti,S0,col=2,lty=2,...)
       graphics::legend("bottomleft",legend=c("treatment","control"),
@@ -439,7 +440,7 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),
 
     ymax <- max(c(datM$hazard_C,datM$hazard_E))*1.1
     with(datM,{
-      plot(ti,hazard_E,cex=0.1,lty=1,col=1,xlab="Time",ylab="Hazard Rate",
+      plot(ti,hazard_E,cex=0.1,lty=1,col=1,xlab="Analysis Time",ylab="Hazard Rate",
            ylim=c(0,ymax),main="Hazard Curves",...)
       graphics::lines(ti,hazard_C,col=2,lty=2,...)
       graphics::legend("bottomright",legend=c("treatment","control"),
@@ -447,10 +448,10 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),
     })
     ## hazard ratio
     with(datM,{
-      plot(ti,theta,cex=0.1,lty=1,col=1,xlab="Time",
+      plot(ti,theta,cex=0.1,lty=1,col=1,xlab="Analysis Time",
            ylim=c(min(theta)*0.9,max(theta)*1.1),
            ylab="Hazard Ratio (treatment over control)",
-           main="Hazard Ratio over Time",...)
+           main="Hazard Ratio",...)
 
 
     })
@@ -460,8 +461,8 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),
   if (tval==0|"dropout" %in% type){
     ymax <- max(c(datM$E_L,datM$C_L))*1.1
     with(datM,{
-      plot(ti,E_L,cex=0.1,lty=1,col=1,xlab="Time",ylab="proporion of drop out",
-           ylim=c(0,ymax),main="Drop-out overtime",...)
+      plot(ti,E_L,cex=0.1,lty=1,col=1,xlab="Analysis Time",ylab="Proporion of drop out",
+           ylim=c(0,ymax),main="Drop-out",...)
       graphics::lines(ti,C_L,col=2,lty=2,...)
       graphics::legend("topleft",legend=c("treatment","control"),
                        col=1:2,lty=1:2,cex=0.8)
@@ -471,9 +472,9 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),
   if (tval==0|"censor" %in% type){
     ymax <- max(c(datM$E_C,datM$C_C))*1.1
     with(datM,{
-      plot(ti,E_C,cex=0.1,lty=1,col=1,xlab="Time",
+      plot(ti,E_C,cex=0.1,lty=1,col=1,xlab="Analysis Time",
            ylab="proporion of censor",
-           ylim=c(0,ymax),main="Administrative censoring overtime",...)
+           ylim=c(0,ymax),main="Administrative Censoring",...)
       graphics::lines(ti,C_C,col=2,lty=2,...)
       graphics::legend("topleft",legend=c("treatment","control"),
                        col=1:2,lty=1:2,cex=0.8)
@@ -482,9 +483,9 @@ plot.NPHpwr<- function(x,type=c("hazard","survival","dropout","event","censor"),
   ##event number
   if (tval==0|"event" %in% type ){
     with(datM,{
-      plot(ti,round(eprob*totalN,digits=0),cex=0.1,lty=1,col=1,xlab="Time",
-           ylab="number of events",
-           main="Events over time",...)
+      plot(ti,round(eprob*totalN,digits=0),cex=0.1,lty=1,col=1,xlab="Analysis Time",
+           ylab="Number of events",
+           main="Events",...)
       graphics::lines(ti,round(E_E*totalN*ratio/(ratio+1),digits=0),col=2,lty=2,...)
       graphics::lines(ti,round(C_E*totalN/(ratio+1),digits=0),col=3,lty=3,...)
       graphics::legend("topleft",legend=c("overall","treatment","control"),

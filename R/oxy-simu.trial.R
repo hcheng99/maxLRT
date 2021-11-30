@@ -29,7 +29,7 @@
 #' @return
 #' A list containing the following components
 #'
-#' \code{data}: a data frame (simulated dataset) with columns:
+#' \code{data}: a dataframe (simulated dataset) with columns:
 #' \describe{
 #' \item{id}{identifier number from 1:n, n is the total sample size}
 #' \item{group}{group variable with 1 indicating treatment and 0 indicating control}
@@ -42,7 +42,7 @@
 #' \item{event}{event indicator with 1 indicating event and 0 indicating censor}
 #' \item{entry.time}{time when the patient is enrolled in the study}
 #'}
-#' summary information of the trial including
+#' a list of summary information of the trial including
 #'
 #' \describe{
 #' \item{\code{type}}{a character indicating input design type - \code{event} or \code{time}}
@@ -87,7 +87,6 @@
 #' hazards models. Statistics in medicine, 24(11), 1713-1723.
 
 #' @examples
-#' \dontrun{
 #' # total sample size
 #' N <- 300
 #' # target event
@@ -116,7 +115,6 @@
 #' data2 <- simu.trial(type="time",trial_param=c(N,entry,fup),bsl_dist="weibull",
 #'                     bsl_param=b_weibull,drop_param0=drop_weibull,HR_fun=HRf,
 #'                     ratio=RR)
-#' }
 #' @seealso
 #'  \code{\link[stats]{uniroot}}
 #' @rdname simu.trial

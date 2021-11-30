@@ -11,8 +11,11 @@
 
 \item{...}{additional arguments passed to the summary function}
 }
+\value{
+No return value. Summary results are printed to Console.
+}
 \description{
-Summarize the results of \code{pwr2n.NPH} function
+Summarize and print the results of \code{pwr2n.NPH} function
 }
 \seealso{
 \code{\link{pwr2n.NPH}}

@@ -58,7 +58,7 @@ to the console or not, Default: TRUE}
 \value{
 A list containing the following components
 
-\code{data}: a data frame (simulated dataset) with columns:
+\code{data}: a dataframe (simulated dataset) with columns:
 \describe{
 \item{id}{identifier number from 1:n, n is the total sample size}
 \item{group}{group variable with 1 indicating treatment and 0 indicating control}
@@ -71,7 +71,7 @@ censor.}
 \item{event}{event indicator with 1 indicating event and 0 indicating censor}
 \item{entry.time}{time when the patient is enrolled in the study}
 }
-summary information of the trial including
+a list of summary information of the trial including
 
 \describe{
 \item{\code{type}}{a character indicating input design type - \code{event} or \code{time}}
@@ -117,7 +117,6 @@ is not appropriate. More details can be found in help file of \code{uniroot}
 function.
 }
 \examples{
-\dontrun{
 # total sample size
 N <- 300
 # target event
@@ -146,7 +145,6 @@ set.seed(123445)
 data2 <- simu.trial(type="time",trial_param=c(N,entry,fup),bsl_dist="weibull",
                     bsl_param=b_weibull,drop_param0=drop_weibull,HR_fun=HRf,
                     ratio=RR)
-}
 }
 \references{
 Bender, R., Augustin, T., & Blettner, M. (2005). Generating survival times to simulate Cox proportional

@@ -9,7 +9,7 @@
 #' @param theta a value within (0,1). If method \code{Maxcross} is selected,
 #' \code{theta} should be specified. See details. Default: 0.5
 #' @return
-#'  a list of weight functions.
+#'  a list of weight function(s).
 #' @details
 #' The weight function for Fleming-Harrington (FH) test is \eqn{S(t)^\rho(1-S(t)^\gamma)}.
 #' If \code{FH} test is specified, both \eqn{\rho} and \eqn{\gamma} should be provided.
@@ -39,15 +39,13 @@
 #'Cheng, H., & He, J. (2021). A Maximum Weighted Logrank Test in Detecting
 #'Crossing Hazards. arXiv preprint arXiv:2110.03833.
 #' @examples
-#' \dontrun{
 #' #logrank test
 #' gen.wgt(method="LR")
 #' # FH and logrank test
 #'   fn <- gen.wgt(method=c("FH","LR"), param = c(1,1))
 #' # maximum weighted logrank test proposed by Cheng, including weight
 #' # for detecting crossing hazards
-#'   wcross <- gen.wgt(method="Macross", theta = c(0.2))
-#' }
+#'   wcross <- gen.wgt(method="Maxcross", theta = c(0.2))
 #' @seealso
 #'  \code{\link{MaxLRtest}}, \code{\link{pwr2n.NPH}}
 #' @rdname gen.wgt

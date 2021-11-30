@@ -34,13 +34,14 @@ evalfup <- function(object, lower.time, upper.time, size,
   ymax <- max(size,Nint)
   ymin <- min(size,Nint)
   if (max(Nint)<size){
-    message("The largest required sample size ( ",max(Nint)," ) is less than the target  sampe size ", size, ". Consider reduce the follow-up time")
+    message("The largest required sample size ( ",max(Nint)," ) is less than the target  sampe size ", size, ". Consider reduce the follow-up time.")
 
   }else if (min(Nint) >size){
-    message("The smallest required sample size ( ",min(Nint)," ) is greater than the target  sampe size ", size, ". Consider increase the follow-up time")
+    message("The smallest required sample size ( ",min(Nint)," ) is greater than the target  sampe size ", size, ". Consider increase the follow-up time.")
   }
   flag <-  (max(Nint)<size)|(min(Nint) >size)
   interp <- stats::approx(fupseq,y=Nint,method="linear")
+  interp_E <- stats::approx(fupseq,y=Dint,method="linear")
   if (flag != TRUE){
 
     y1 <- interp$y
@@ -48,6 +49,7 @@ evalfup <- function(object, lower.time, upper.time, size,
     p1 <- max(which(y1 >= size))
     p2 <- min(which(y1  <= size))
     xsize <- mean(c(x1[p1:p2]))
+    Ey <- ceiling(mean(c(interp_E$y[p1:p2])))
     move <- (upper.time-lower.time)/7
   }else {
     xsize <- NA
@@ -57,17 +59,19 @@ evalfup <- function(object, lower.time, upper.time, size,
        xlab= xlabel, ylab=ylabel,
        main = title)
   graphics::points(interp$x,interp$y,pch=16,cex=0.3)
-  graphics::points(x=fupseq, y = Dint, cex = 0.5, col = "blue", pch = 17)
+  graphics::points(x=fupseq, y = Dint, cex = 0.8, col = "blue", pch = 0)
+  graphics::points(x=interp_E$x, y = interp_E$y, cex = 0.25, col = "black",
+                   pch = 3)
   if (flag !=TRUE){
     graphics::segments(x0=xsize,x1=xsize,y0=0,y1=size,lty=2)
     graphics::segments(x0=0,x1=xsize,y0=size,y1=size,lty=2)
-    graphics::text(paste0("(",round(xsize,digits = 1),", ",size,")"),x=xsize+move,
+    graphics::text(paste0("(",round(xsize,digits = 1),",",Ey,",",size,")"),x=xsize+move,
                    y=size*1.05,cex=0.7)
   }
 
-  legend("topright",legend=c("Orignal N","Interpolated N", "Event Number"),
-         pch=c(1, 16, 17),
-         col=c("red","black","blue"),cex=c(0.8))
+  legend("topright",legend=c("N","Interpolated N", "E","Interpolated E"),
+         pch=c(1, 16, 0,3),
+         col=c("red","black","blue","black"),cex=c(0.5), horiz = TRUE)
   # return values
   original <- list(x=fupseq,y=N)
   return(list(
@@ -78,6 +82,7 @@ evalfup <- function(object, lower.time, upper.time, size,
 
   ))
 }
+
 
 
 

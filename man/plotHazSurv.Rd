@@ -35,7 +35,7 @@ figures will be drawn in an nr-by-nc array, Default: c(1, 2)}
 for the hazard plot. Default: "bottomleft"}
 }
 \value{
-graphic display of hazard and survival functions
+graphics of hazard and survival functions
 }
 \description{
 Plot the hazard and survival function of the
@@ -43,7 +43,6 @@ of control group (from weibull or loglogistic distribution) and treatment group
 (derived from an arbitrary hazard ratio function)
 }
 \examples{
-\dontrun{
 # proportional hazards
 plotHazSurv(
  bsl_dist=c("weibull")
@@ -62,5 +61,4 @@ plotHazSurv(
  ,tit= c("Hazard Function","Survival Function")
  ,pos=c(1,2)
 )
-}
 }

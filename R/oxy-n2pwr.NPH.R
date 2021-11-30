@@ -64,7 +64,6 @@
 #' \code{eventN} for calculation.
 #' Check function \code{pwr2n.NPH} for more calculation details.
 #' @examples
-#' \dontrun{
 #' # entry time
 #' t_enrl <- 12
 #' # follow-up time
@@ -84,7 +83,6 @@
 #'                  ,Wlist = maxc
 #'                  ,eventN = 50 # targeted number of events
 #')
-#' }
 #' @seealso
 #'  \code{\link{pwr2n.NPH}}
 #' @rdname n2pwr.NPH
@@ -122,7 +120,6 @@ n2pwr.NPH<- function(method = "MaxLR"
       mct <- 0
       old.total <- totalN
     }
-
   if (mce+mct==2){
     stop("At least one of eventN/totalN must be provided")
   }else if (mce+mct==0){
@@ -130,7 +127,6 @@ n2pwr.NPH<- function(method = "MaxLR"
              The asymptotic power is calculated based on number of events.")
   }
 
-  old.total <- totalN
   tot_time <- entry+fup
   num <- k*tot_time
   # create the subintervals

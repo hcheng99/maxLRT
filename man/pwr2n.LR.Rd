@@ -50,8 +50,9 @@ See Details below. Default: NULL}
 , Default: TRUE}
 }
 \value{
-\item{eventN}{The total number of events}
-\item{totalN}{The total number of subjects}
+a list of components including
+\item{eventN}{a numeric value giving the total number of events}
+\item{totalN}{a numeric value giving the total number of subjects}
 \item{summary}{a list containing the input parameters and output results}
 }
 \description{
@@ -76,7 +77,7 @@ is calculated through numeric integration. See more details in
 \code{\link{cal_event}}.
 }
 \examples{
-\dontrun{
+# define design parameters
 l0 <- log(2)/14; HR <- 0.8; RR <- 2; entry <- 12; fup <- 12;
 eg1 <- pwr2n.LR( method    = c("schoenfeld")
                  ,l0
@@ -103,7 +104,6 @@ eg2 <- pwr2n.LR( method    = c("schoenfeld")
 )
 # event number, total subjects, event probability
 c(eg2$eventN,eg2$totalN,eg2$eventN/eg2$totalN)
-}
 }
 \references{
 Schoenfeld, D. (1981) The asymptotic properties of nonparametric
